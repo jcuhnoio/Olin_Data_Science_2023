@@ -55,22 +55,34 @@ In this first stage, you will explore the `diamonds` dataset and document your o
 ```{r q1-task}
 ## TASK: Plot `price` vs `carat` below
 ## Your code here!
+diamonds %>%
+  ggplot(aes(x = carat, y = price)) +
+  geom_point()
 ```
 
 **Observations**:
 
 - (Write your observations here!)
+
+There tends to be a positive correlation between price and carat.
 
 ### __q2__ Create a visualization showing variables `carat`, `price`, and `cut` simultaneously. Experiment with which variable you assign to which aesthetic (`x`, `y`, etc.) to find an effective visual.
 
 ```{r q2-task}
 ## TASK: Plot `price`, `carat`, and `cut` below
 ## Your code here!
+
+diamonds %>% 
+  ggplot(aes(carat, price)) +
+  geom_point(aes(color = factor(cut)), alpha = 0.4)
+
+
 ```
 
 **Observations**:
 
 - (Write your observations here!)
+The cut is a deciding factor for the price if the carat is same. Better cuts are usually more expensive.
 
 
 # Communication

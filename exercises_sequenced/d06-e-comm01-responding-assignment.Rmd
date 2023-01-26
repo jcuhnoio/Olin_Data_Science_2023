@@ -94,8 +94,14 @@ Here the bolded response is *actively* engaging with your colleague's question, 
 **Observations**:
 
 - Is the bolded response **active** or **passive**? Why?
+The response is active, as the presenter is directly answering the question of the colleague.
+
 - Is the bolded response **constructive** or **destructive**? Why?
+It is constructive, as not only does the presenter answer the question, they recognize that they have made a mistake and complements the colleague for spotting it.
+
 - How does this statement make you *feel*, relative to the bolded statement before the q1 prompt?
+It leaves me with a more positive emotion.
+
 
 ### __q2__ Identify the nature of the bolded line below, rating it as either **active vs passive** and **constructive vs destructive**.
 
@@ -108,8 +114,14 @@ Here the bolded response is *actively* engaging with your colleague's question, 
 **Observations**:
 
 - Is the bolded response **active** or **passive**? Why?
+Passive, as the presenter doesn't provide an actual answer to what the colleague is asking.
+
 - Is the bolded response **constructive** or **destructive**? Why?
+It is still constructive, as the presenter commends the colleague for spotting a mistake.
+
 - How does this statement make you *feel*, relative to the bolded statement before the q1 prompt?
+I would feel rather confused.
+
 
 **Intermediate Conclusion**: We can quite naturally think of discussion responses in the APCD framework. Therefore, we should try to give active and constructive responses in data discussions!
 
@@ -175,7 +187,10 @@ Let's practice once more!
 **Observations**:
 
 - Is the bolded response **active** or **passive**? Why?
+The response is passive, as it does not have much relevance to what is being said at the moment.
+
 - Is the bolded response **constructive** or **destructive**? Why?
+I would argue that it is destructive, as it disrupts the flow of the presenter.
 
 <!-- include-exit-ticket -->
 # Exit Ticket

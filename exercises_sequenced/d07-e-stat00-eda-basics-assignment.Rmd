@@ -44,6 +44,8 @@ library(tidyverse)
 to do? Do those simple checks on the diamonds dataset below.
 
 ```{r q0-task}
+head(diamonds)
+summary(diamonds)
 ```
 
 I'm going to walk you through a train of thought I had when studying the
@@ -71,6 +73,8 @@ diamonds %>%
 
 **Observations**:
 - Write your observations here!
+The opposite of the hypothesis is shown in the graph, where the better the cut of the diamond, the more there are.
+
 
 ## Hypothesis 2
 
@@ -88,6 +92,7 @@ diamonds %>%
 
 **Observations**:
 - Write your observations here!
+The graph shows that there is great variance regardless of the cut. It may be argued that the plot contradicts the hypothsis. However, since the plot does not show characteristics of the variation, it may not be telling the full story.
 
 The following is a set of *boxplots*; the middle bar denotes the median, the
 boxes denote the *quartiles* (upper and lower "quarters" of the data), and the
@@ -103,6 +108,7 @@ diamonds %>%
 
 **Observations**:
 - Write your observations here!
+Since boxplots visualize variance, it helps add confidence that the hypothesis is not true.
 
 ## Unraveling Hypothesis 2
 
@@ -123,6 +129,7 @@ diamonds %>%
 
 **Observations**:
 - Write your observations here!
+There are outliers with the "Fair" cut that has significantly more carats than other cuts.
 
 ## Footnotes
 

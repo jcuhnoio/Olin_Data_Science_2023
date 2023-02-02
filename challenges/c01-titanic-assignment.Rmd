@@ -51,11 +51,12 @@ df_titanic <- as_tibble(Titanic)
 
 ```{r q1-task}
 ## TASK: Perform a `glimpse` of df_titanic
+df_titanic %>% glimpse
 ```
 
 **Observations**:
 
-- (List all variables here)
+- Class, Sex, Age, Survived, n
 
 ### __q2__ Skim the [Wikipedia article](https://en.wikipedia.org/wiki/RMS_Titanic) on the RMS Titanic, and look for a total count of souls aboard. Compare against the total computed below. Are there any differences? Are those differences large or small? What might account for those differences?
 
@@ -67,12 +68,12 @@ df_titanic %>% summarize(total = sum(n))
 
 **Observations**:
 
-- Write your observations here
+- There were a total of 2201 people that boarded the Titanic according to this dataset.
 - Are there any differences?
-  - (Your response here)
+  - Yes, according to the Wikipedia article, there were 885 crew members and 1317 Passengers, which add to 2202.
 - If yes, what might account for those differences?
-  - (Your response here)
-  - ...
+  - One person could have purchased a ticket but not have gotten on. If ticket sales were counted for the passenger headcount, it might account for the difference.
+  - The dataset might not include cases where it is unknown whether the person survived.
 
 ### __q3__ Create a plot showing the count of persons who *did* survive, along with aesthetics for `Class` and `Sex`. Document your observations below.
 
@@ -80,11 +81,17 @@ df_titanic %>% summarize(total = sum(n))
 
 ```{r q3-task}
 ## TASK: Visualize counts against `Class` and `Sex`
+df_titanic[df_titanic$Survived == "Yes", ] %>%
+  ggplot(aes(x = Sex, y = n, fill = Sex)) +
+  geom_bar(stat = "identity") +
+  facet_grid(~ Class)
 ```
 
 **Observations**:
 
-- Write your observations here
+- For 1st and 2nd Class passengers, significantly more females are rescued. For 3rd class, while there are more females that were rescued, the difference is not as big as 1st and 2nd class. For Crew, the amount of males rescued was much bigger than females, more so than the difference of 1st and 2nd class.
+
+
 
 # Deeper Look
 <!-- -------------------------------------------------- -->
@@ -110,26 +117,43 @@ df_prop
 ### __q4__ Replicate your visual from q3, but display `Prop` in place of `n`. Document your observations, and note any new/different observations you make in comparison with q3. Is there anything *fishy* in your plot?
 
 ```{r q4-task}
+df_prop[df_prop$Survived == "Yes", ] %>%
+  ggplot(aes(x = Sex, y = Prop, fill = Sex)) +
+  geom_bar(stat = "identity") +
+  facet_grid(~ Class)
 ```
 
 **Observations**:
 
-- Write your observations here.
+
+- Across the Class, females had a better chance of getting rescued, even for crew, which had more males that were actually rescued.
 - Is there anything *fishy* going on in your plot?
-  - (Your response here)
+  - The proportions add up to more than 1.
 
 ### __q5__ Create a plot showing the group-proportion of occupants who *did* survive, along with aesthetics for `Class`, `Sex`, *and* `Age`. Document your observations below.
 
 *Hint*: Don't forget that you can use `facet_grid` to help consider additional variables!
 
 ```{r q5-task}
+df_q5 <-
+  df_titanic %>%
+  group_by(Class, Sex, Age) %>%
+  mutate(
+    total = sum(n),
+    prop = n/total
+    )
+
+df_q5[df_q5$Survived == "Yes", ] %>%
+  ggplot(aes(x = Sex, y = prop, fill = Sex)) +
+  geom_bar(stat = "identity") +
+  facet_grid(Age ~ Class)
 ```
 
 **Observations**:
 
-- (Write your observations here.)
+- Females still had better chances of being rescued, according to this visualization. However, when introducing age as a variable, it is clear that children had much better odds of being rescued compared to adults of the same class and sex.
 - If you saw something *fishy* in q4 above, use your new plot to explain the fishy-ness.
-  - (Your response here)
+  - In q4, the plot was adding adult and child proportions, which made some values bigger than 1. 
 
 # Notes
 <!-- -------------------------------------------------- -->

@@ -248,7 +248,7 @@ df_q5 <-
   mutate(
     total = sum(n),
     prop = n/total
-    )
+  )
 
 df_q5[df_q5$Survived == "Yes", ] %>%
   ggplot(aes(x = Sex, y = prop, fill = Sex)) +

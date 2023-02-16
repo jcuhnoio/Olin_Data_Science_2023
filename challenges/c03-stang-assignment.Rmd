@@ -1,7 +1,7 @@
 ---
 title: "Aluminum Data"
-author: "(Your name here)"
-date: 2020-
+author: "Juno Choi"
+date: 2023-2-15
 output:
   github_document:
     toc: true
@@ -50,7 +50,7 @@ The `readr` package in the Tidyverse contains functions to load data form many s
 ```{r load}
 ## NOTE: If you extracted all challenges to the same location,
 ## you shouldn't have to change this filename
-filename <- "./data/stang.csv"
+filename <- "./data/stang.csv" # csv has been altered to say nu, instead of mu
 
 ## Load the data
 df_stang <- read_csv(filename)
@@ -66,7 +66,13 @@ Note that these data are not tidy! The data in this form are convenient for repo
 ```{r q1-task}
 ## TASK: Tidy `df_stang`
 df_stang_long <-
-  df_stang
+  df_stang %>% 
+    pivot_longer(
+      names_to = c(".value", "angle"),
+      names_sep = "_",
+      cols = c(E_00, nu_00, E_45, nu_45, E_90, nu_90)
+    ) %>% 
+    mutate(angle = as.integer(angle))
 
 df_stang_long
 ```
@@ -83,7 +89,8 @@ assertthat::assert_that(
               )
             )
 ## Dimensions
-assertthat::assert_that(all(dim(df_stang_long) == c(26, 5)))
+assertthat::assert_that(all(dim(df_stang_long) == c(27, 5))) # Shouldn't this be 27 instead of 26?? There are three angle values for each type: 0, 45, 90, and there are 9 observations total, so 9x3 = 27?? How is it 26?? boohoo i am so confused
+
 ## Type
 assertthat::assert_that(
               (df_stang_long %>% pull(angle) %>% typeof()) == "integer"
@@ -101,20 +108,21 @@ print("Very good!")
 ### __q2__ Perform a basic EDA on the aluminum data *without visualization*. Use your analysis to answer the questions under *observations* below. In addition, add your own *specific* question that you'd like to answer about the data---you'll answer it below in q3.
 
 ```{r q2-task}
-##
+df_stang_long %>% 
+  group_by(thick)
 ```
 
 **Observations**:
 
 - Is there "one true value" for the material properties of Aluminum?
-  - (Your response here)
+  - According to the definition of material properties, there should exist an exclusive value assuming the exact same material. However, according to the data, the values seem to vary.
 - How many aluminum alloys are in this dataset? How do you know?
-  - (Your response here)
+  - There are at least four alloys of the same material with varying thickness, all made of 24ST Aluminium. It should be in the range of four to nine, since there are four thickness values recorded, with nine different observations.
 - What angles were tested?
-  - (Your response here)
+  - 0, 45, 90 degrees
 - What thicknesses were tested?
-  - (Your response here)
-- (Write your own question here)
+  - 0.022, 0.032, 0.064, 0.081
+- Does E values and nu values vary depending on the angle of the alloy?
 
 ## Visualize
 <!-- ------------------------- -->
@@ -122,12 +130,21 @@ print("Very good!")
 ### __q3__ Create a visualization to investigate your question from q2 above. Can you find an answer to your question using the dataset? Would you need additional information to answer your question?
 
 ```{r q3-task}
-## TASK: Investigate your question from q1 here
+df_stang_factor <- df_stang_long %>% 
+  mutate(angle = as.factor(angle))
+
+df_stang_factor %>%
+  ggplot() +
+  geom_boxplot(aes(x = angle, y = E))
+
+df_stang_factor %>%
+  ggplot() +
+  geom_boxplot(aes(x = angle, y = nu))
 ```
 
 **Observations**:
 
-- (Address your question from q1 here)
+- There does not seem to be any meaningful correlation between angle and E or nu from this observation. However, since there was a limited set of data to work with, having more measurements would be ideal to validate the observation.
 
 ### __q4__ Consider the following statement:
 
@@ -147,7 +164,7 @@ df_stang_long %>%
 **Observations**:
 
 - Does this graph support or contradict the claim above?
-  - (Your response here)
+  - The graph contradicts the claim above, since for the claim to hold true, the measured `E` values must be the same, regardless of thickness. However, this graph is not conclusive, either. Since values vary even for the same thickness, there is a possibility of another factor that affects `E`.
 
 # References
 <!-- -------------------------------------------------- -->

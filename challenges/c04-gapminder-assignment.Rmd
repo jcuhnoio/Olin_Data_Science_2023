@@ -56,11 +56,14 @@ dataset?
 
 ```{r q0-task}
 ## TASK: Do your "first checks" here!
+glimpse(gapminder)
 ```
 
 **Observations**:
 
 - Write all variable names here
+
+country, continent, year, liefExp, pop, gdpPercap
 
 ### __q1__ Determine the most and least recent years in the `gapminder` dataset.
 
@@ -68,8 +71,8 @@ dataset?
 
 ```{r q1-task}
 ## TASK: Find the largest and smallest values of `year` in `gapminder`
-year_max <- NA_real_
-year_min <- NA_real_
+year_max <- gapminder %>% pull(year) %>% max()
+year_min <- gapminder %>% pull(year) %>% min()
 ```
 
 Use the following test to check your work.
@@ -95,26 +98,41 @@ You may encounter difficulties in visualizing these data; if so document your ch
 
 ```{r q2-task}
 ## TASK: Create a visual of gdpPercap vs continent
+gm_min <- gapminder[gapminder$year == year_min,]
+
+gm_min %>% 
+  ggplot(aes(continent, gdpPercap)) +
+  geom_boxplot()
+
 ```
 
 **Observations**:
 
 - Write your observations here
 
+When taking the mean of GDP per capita for each country in a continent, Oceania has the biggest value.
+
 **Difficulties & Approaches**:
 
 - Write your challenges and your approach to solving them
+
+There are multiple countries in each continent, therefore some kind of sum had to be taken. In this case, a boxplot was chosen to visualize, since it not only shows the mean values, but the distribution and outliers.
 
 ### __q3__ You should have found *at least* three outliers in q2 (but possibly many more!). Identify those outliers (figure out which countries they are).
 
 ```{r q3-task}
 ## TASK: Identify the outliers from q2
+
+print(gm_min %>% slice_max(gdpPercap)) 
+print(gm_min[gm_min$continent == "Europe",] %>% slice_max(gdpPercap))
+print(gm_min[gm_min$continent == "Americas",] %>% slice_max(gdpPercap))
 ```
 
 **Observations**:
 
 - Identify the outlier countries from q2
   - (Your response here)
+  Kuwait, Switzerland, and the United States stand out as the most unusual in terms of GDP per capita in each continent.
 
 *Hint*: For the next task, it's helpful to know a ggplot trick we'll learn in an upcoming exercise: You can use the `data` argument inside any `geom_*` to modify the data that will be plotted *by that geom only*. For instance, you can use this trick to filter a set of points to label:
 
@@ -138,11 +156,21 @@ gapminder %>%
 
 ```{r q4-task}
 ## TASK: Create a visual of gdpPercap vs continent
+gm_min %>% 
+  ggplot(aes(continent, gdpPercap)) +
+  geom_boxplot() +
+  geom_point(
+    data = . %>% filter(country %in% c("United States", "Kuwait", "Switzerland")),
+    mapping = aes(color = country),
+    size = 2
+  )
 ```
 
 **Observations**:
 
 - Write your observations here
+
+According to the boxplot, outliers only exist above the mean for each continent. Regardless of general tendencies, Kuwait has a disproportionately large GDP per capita value.
 
 # Your Own EDA
 <!-- -------------------------------------------------- -->
@@ -153,18 +181,52 @@ Now it's your turn! We just went through guided EDA considering the GDP per capi
 
 ```{r q5-task1}
 ## TASK: Your first graph
+gdp_out <- gapminder %>% filter(country == "Kuwait" |
+                                   country == "United States" | 
+                                   country == "Switzerland")
+
+
+gdp_out %>% 
+  ggplot(aes(x = year, y = gdpPercap, color = country)) +
+  geom_line()
 ```
 
-- (Your notes and observations here)
+- (Your notes and observations here) 
+
+The GDP per capita of Kuwait fluctuates wildly before settling into the trend of the other outliers. A question that arises here is that how does the GDP per capita look like for the entire world across the years compared to these three countries?
 
 ```{r q5-task2}
 ## TASK: Your second graph
+gdp_percap_mean <- aggregate(gdpPercap ~ year, gapminder, mean)
+ 
+ggplot(gdp_percap_mean, aes(x = year, y = gdpPercap)) +
+geom_line() +
+geom_line(
+    data = gapminder %>% filter(country %in% c("United States", "Kuwait", "Switzerland", "India", "China")),
+    mapping = aes(color = country),
+  )
 ```
 
 - (Your notes and observations here)
+
+The worldwide trend is the GDP per capita is increasing as time goes on. I have included China and India here, the two most populated countries in the world. As in the name, GDP per capita, is also dependent on population, it would be interesting to see how the shape of the graphs may change when taking the variable into consideration.
 
 ```{r q5-task3}
 ## TASK: Your third graph
+gdp_country <- gapminder %>% filter(country == "Kuwait" |
+                                country == "United States" | 
+                                country == "Switzerland" |
+                                country == "China" |
+                                country == "India"
+                                )
+
+gdp_country <- gdp_country %>% mutate(gdp = gdpPercap * pop)
+
+gdp_country %>% 
+  ggplot(aes(x = year, y = gdp, color = country)) +
+  geom_line()
 ```
 
 - (Your notes and observations here)
+
+When multiplied by population, United States has the biggest GDP by a large margin. It is also interesting to note that while China and India had smaller GDP per capita values, even compared to the mean of the entire world, their GDP itself is larger than that of Kuwait and Switzerland, which both had bigger GDP per capita values than the global mean.

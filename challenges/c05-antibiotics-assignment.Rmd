@@ -75,6 +75,7 @@ In this visual you must show *all three* effectiveness values for *all 16 bacter
 
 ```{r q1.1}
 # WRITE YOUR CODE HERE
+antibiotics_longer <- df_antibiotics %>% pivot_longer()
 ```
 
 #### Visual 2 (All variables)

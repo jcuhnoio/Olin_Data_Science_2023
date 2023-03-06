@@ -75,7 +75,12 @@ In this visual you must show *all three* effectiveness values for *all 16 bacter
 
 ```{r q1.1}
 # WRITE YOUR CODE HERE
-antibiotics_longer <- df_antibiotics %>% pivot_longer()
+antibiotics_longer <- df_antibiotics[0:4] %>% pivot_longer(col = !bacteria)
+
+antibiotics_longer %>%
+  ggplot(aes(y = value, x = bacteria, color = name, group = name)) +
+  geom_line() +
+  coord_flip()
 ```
 
 #### Visual 2 (All variables)

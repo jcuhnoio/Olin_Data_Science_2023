@@ -78,7 +78,13 @@ That's the high-level view; now let's dig into the details.
 
 ```{r q1-task}
 ## TASK: Load the census bureau data with the following tibble name.
-df_pop <- NA
+df_pop <- read_csv("./data/ACSDT5Y2018.B01003-Data.csv",
+                   skip = 1,
+                   col_select = c(id = "Geography",
+                                  "Geographic Area Name",
+                                  "Estimate!!Total",
+                                  "Margin of Error!!Total")
+                  )
 ```
 
 *Note*: You can find information on 1-year, 3-year, and 5-year estimates [here](https://www.census.gov/programs-surveys/acs/guidance/estimates.html). The punchline is that 5-year estimates are more reliable but less current.
@@ -94,7 +100,8 @@ The New York Times is publishing up-to-date data on COVID-19 on [GitHub](https:/
 
 ```{r q2-task}
 ## TASK: Find the URL for the NYT covid-19 county-level data
-url_counties <- NA_character_
+url_counties <- "https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-counties-2020.csv"
+
 ```
 
 Once you have the url, the following code will download a local copy of the data, then load the data into R.
@@ -135,7 +142,8 @@ To join these datasets, we'll need to use [FIPS county codes](https://en.wikiped
 
 ```{r q3-task}
 ## TASK: Create a `fips` column by extracting the county code
-df_q3 <- NA
+df_q3 <- df_pop %>% 
+  mutate(fips = str_sub(id, -5))
 ```
 
 Use the following test to check your answer.
@@ -155,7 +163,8 @@ print("Very good!")
 
 ```{r q4-task}
 ## TASK: Join df_covid and df_q3 by fips.
-df_q4 <- NA
+df_q4 <- df_q3 %>% 
+  left_join(df_covid, by = "fips")
 ```
 
 For convenience, I down-select some columns and produce more convenient column
@@ -189,7 +198,10 @@ Now that we've done the hard work of loading and wrangling the data, we can fina
 ```{r q5-task}
 ## TASK: Normalize cases and deaths
 df_normalized <-
-  df_data
+  df_data %>% mutate(
+                  cases_per100k = 100000 * cases / population,
+                  deaths_per100k = 100000 * deaths / population
+  )
 ```
 
 You may use the following test to check your work.
@@ -237,19 +249,47 @@ Before turning you loose, let's complete a couple guided EDA tasks.
 
 ```{r q6-task}
 ## TASK: Compute mean and sd for cases_per100k and deaths_per100k
+df_q6 <- df_normalized %>% 
+  group_by(date) %>%
+  drop_na(cases_per100k, deaths_per100k) %>% 
+  summarize(
+    mean_cases_per100k = mean(cases_per100k),
+    sd_cases_per100k = sd(cases_per100k),
+    mean_deaths_per100k = mean(deaths_per100k),
+    sd_deaths_per100k = sd(deaths_per100k)    
+  )
 ```
 
 ### __q7__ Find the top 10 counties in terms of `cases_per100k`, and the top 10 in terms of `deaths_per100k`. Report the population of each county along with the per-100,000 counts. Compare the counts against the mean values you found in q6. Note any observations.
 
 ```{r q7-task}
 ## TASK: Find the top 10 max cases_per100k counties; report populations as well
+top_cases <- df_normalized %>% 
+  group_by(county, population) %>% 
+  summarize(max_cases_per100k = max(cases_per100k)) %>% 
+  arrange(desc(max_cases_per100k)) %>% 
+  ungroup()
+
+top_ten_cases <- top_cases %>% slice(1:10)
 
 ## TASK: Find the top 10 deaths_per100k counties; report populations as well
+top_deaths <- df_normalized %>% 
+  group_by(county, population) %>% 
+  summarize(max_deaths_per100k = max(deaths_per100k)) %>% 
+  arrange(desc(max_deaths_per100k)) %>% 
+  ungroup()
+
+top_ten_deaths <- top_deaths %>% slice(1:10)
 ```
 
 **Observations**:
 
 - (Note your observations here!)
+It is apparent that both maximum cases and maximum deaths are significantly larger in the top 10 counties.
+
+Counties with the largest maximum cases per 100k tend to have a relatively smaller population. This could suggest that such small counties do not have enough resources to provide adequate testing.
+
+The same also holds for largest maximum deaths, where even smaller counties have the biggest death counts. This could also suggest that such small counties do not have enough medical resources to support patients.
 
 ## Self-directed EDA
 <!-- ------------------------- -->
@@ -266,7 +306,28 @@ Before turning you loose, let's complete a couple guided EDA tasks.
 - Fix the *geographic exceptions* noted below to study New York City.
 - Your own idea!
 
+### Claim: The political tendency of the population has nothing to do with COVID cases
 **DO YOUR OWN ANALYSIS HERE**
+```{r q8}
+library(usmap)
+results <- read.csv("./data/2020us.csv")
+state_codes <- data.frame(state = state.name, code = state.abb)
+results <- merge(results, state_codes, by = "state")
+election_data <- data.frame(state = results$code,
+                            trump = results$trump,
+                            biden = results$biden,
+                            other = results$other,
+                            winner = ifelse(results$trump > results$biden, "Trump", "Biden"))
+
+# election_data <-
+#   election_data %>% mutate(election_data, tbratio = ifelse(biden/trump >)
+# 
+# plot_usmap(data = election_data, values = "tbratio") +
+#   scale_fill_gradient2() +
+#   theme_void() +
+#   labs(title = "2020 US Election Results by State")
+
+```
 
 ### Aside: Some visualization tricks
 <!-- ------------------------- -->

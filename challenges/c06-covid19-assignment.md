@@ -549,14 +549,46 @@ election_data <- data.frame(state = results$code,
                             other = results$other,
                             winner = ifelse(results$trump > results$biden, "Trump", "Biden"))
 
-# election_data <-
-#   election_data %>% mutate(election_data, tbratio = ifelse(biden/trump >)
-# 
-# plot_usmap(data = election_data, values = "tbratio") +
-#   scale_fill_gradient2() +
-#   theme_void() +
-#   labs(title = "2020 US Election Results by State")
+election_data <-
+  election_data %>% mutate(election_data, tbratio = ifelse(biden > trump, biden/(trump + biden + other), -1 * trump/(biden + trump + other)))
+
+plot_usmap(data = election_data, values = "tbratio") +
+  scale_fill_gradient2() +
+  theme_void() +
+  labs(title = "2020 US Election Results by State")
 ```
+
+![](c06-covid19-assignment_files/figure-gfm/q8-1.png)<!-- -->
+
+``` r
+df_state <- 
+  df_normalized %>% 
+  group_by(state) %>% 
+  summarize(sum_100k = sum(cases_per100k))
+
+df_state <- merge(df_state, state_codes, by = "state")
+df_state <- df_state[-c(1)]
+colnames(df_state)[2] = "state"
+
+election_cases100k <- merge(df_state, election_data, by = "state")
+
+election_cases100k <- election_cases100k %>% 
+  mutate(weight = sum_100k * tbratio)
+
+plot_usmap(data = election_cases100k, values = "weight") +
+  scale_fill_gradient2() +
+  theme_void() +
+  labs(title = "Weighted map")
+```
+
+![](c06-covid19-assignment_files/figure-gfm/q8-2.png)<!-- -->
+
+``` r
+weightsum <- sum(election_cases100k$weight)
+print(weightsum)
+```
+
+    ## [1] -363366303
 
 ### Aside: Some visualization tricks
 

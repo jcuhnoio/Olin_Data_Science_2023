@@ -346,7 +346,7 @@ plot_usmap(data = election_cases100k, values = "weight") +
   theme_void() +
   labs(title = "Weighted map")
 
-weightsum <- sum(election_cases100k$weight)
+weightsum <- sum(election_cases100k$ weight)
 print(weightsum)
 ```
 

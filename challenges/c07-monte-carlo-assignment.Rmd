@@ -101,15 +101,43 @@ Remember in `e-stat02-probability` we learned how to estimate probabilities as t
 
 ```{r q1-task}
 ## TASK: Choose a sample size and generate samples
-n <- NA_real_ # Choose a sample size
-df_q1 <- NA # Generate the data
+n <- 100000 # Choose a sample size
+df_q1 <- as.data.frame(list(x = runif(n, 0, 1), y = runif(n, 0, 1))) # Generate the data
+
+# Visualize points of generated samples
+tibble(x = seq(0, 1, length.out = 100)) %>%
+  mutate(y = sqrt(1 - x^2)) %>%
+
+  ggplot(aes(x, y)) +
+  annotate(
+    "rect",
+    xmin = 0, ymin = 0, xmax = 1, ymax = 1,
+    fill = "grey40",
+    size = 1
+  ) +
+  geom_ribbon(aes(ymin = 0, ymax = y), fill = "coral") +
+  geom_line() +
+  geom_point(data = df_q1, aes(x, y), size = 0.1, color = "cyan", alpha = 0.1) +
+  scale_x_continuous(breaks = c(0, 1/2, 1)) +
+  scale_y_continuous(breaks = c(0, 1/2, 1)) +
+  theme_minimal() +
+  coord_fixed()
 ```
 
 ### __q2__ Using your data in `df_q1`, estimate $\pi$.
 
 ```{r q2-task}
 ## TASK: Estimate pi using your data from q1
-pi_est <- NA_real_
+pi_est <- df_q1 %>% 
+  mutate(
+    inside = (x^2 + y^2) < 1
+  ) %>% 
+  summarize(
+     inside_mean = mean(inside),
+     inside_sd = sd(inside),
+     pi_est = inside_mean * 4,
+     sample_size = nrow(df_q1)
+  )
 pi_est
 ```
 
@@ -121,16 +149,22 @@ You now have an estimate of $\pi$, but how trustworthy is that estimate? In `e-s
 ### __q3__ Using a CLT approximation, produce a confidence interval for your estimate of $\pi$. Make sure you specify your confidence level. Does your interval include the true value of $\pi$? Was your chosen sample size sufficiently large so as to produce a trustworthy answer?
 
 ```{r q3-task}
+Zscore <- - qnorm(0.997 / 2)
+sigma3_min <- 4 * (pi_est$inside_mean - Zscore * pi_est$inside_sd)
+sigma3_max <- 4 * (pi_est$inside_mean + Zscore * pi_est$inside_sd)
+
+sigma3_min
+sigma3_max
 ```
 
 **Observations**:
 
 - Does your interval include the true value of $\pi$?
-  - (Your response here)
+  - (Your response here) Yes it does!
 - What confidence level did you choose?
-  - (Your response here)
+  - (Your response here) 99.7%
 - Was your sample size $n$ large enough? Why do you say that?
-  - (Your response here)
+  - (Your response here) Yes. I believe a "large enough sample size" depends heavily on what I am trying to achieve. Here, since I am trying to observe the feasibility of the Monte Carlo method by estimating pi, and since I was able to get a meaningful approximation, I would say that my sample size is large enough.
 
 # References
 <!-- -------------------------------------------------- -->

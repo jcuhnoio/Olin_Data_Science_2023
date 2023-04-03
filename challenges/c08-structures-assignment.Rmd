@@ -70,16 +70,18 @@ Data Dictionary:
 ### __q1__ Visualize the strength data with a histogram. Answer the questions below.
 
 ```{r q1-task}
+df_samples %>% ggplot(aes(x = strength)) +
+  geom_histogram()
 ```
 
 **Observations**:
 
 - What is the mean strength of the material, approximately?
-  - (Your response here)
+  - (Your response here) From the histogram, it seems to be near 40,000.
 - To what extent can you tell what shape the distribution of the data has?
-  - (Your response here)
+  - (Your response here) It has characteristics of a bell curve, where a central value tends to have more counts than other values.
 - Assuming the scopus is the strength of an individual part made from this aluminum alloy, is the observed variability real or induced?
-  - (Your response here)
+  - (Your response here) There are both real and induced variabilities, from the material properties themselves to manufacturing methods.
 
 # Assessing Structural Safety
 <!-- ----------------------------------------------------------------------- -->
@@ -117,17 +119,21 @@ $$\text{POF} \equiv \mathbb{P}[g \leq 0].$$
 
 ```{r q2-task}
 ## TODO: Estimate the probability of failure; i.e. POF = Pr[g <= 0]
-df_samples
+df_samples %>% 
+  mutate(
+    failed = g_break(strength) <= 0
+  ) %>% 
+  summarize(failure = mean(failed))
 ```
 
 **Observations**:
 
 - Does this estimate satisfy `POF < 0.03`?
-  - (Your response here)
+  - (Your response here) Yes.
 - Is this estimate of the probability of failure trustworthy? Why or why not?
-  - (Your response here)
+  - (Your response here) For the samples gathered, it is trustworthy. For real life situations such as large scale manufacturing, I would not deem this as trustworthy, or at least satisfactory for such applications, as 25 measurements may not tell the entire story.
 - Can you confidently conclude that `POF < 0.03`? Why or why not.
-  - (Your response here)
+  - (Your response here) For the same reason mentioned above, I cannot confidently reach that conclusion.
 
 ## Material property model
 <!-- --------------------------------------- -->
@@ -144,7 +150,7 @@ Since we have so few physical samples, we will fit a distribution to model the m
 
 ```{r q3-task}
 ## TODO:
-df_fit <- NA
+df_fit <- fitdistr(x = df_samples$strength, densfun = "lognormal")
 df_fit
 ```
 
@@ -158,17 +164,19 @@ Once you've successfully fit a model for the strength, you can estimate the prob
 
 ```{r q4-task}
 ## TODO 1: Choose Monte Carlo sample size
-n_monte_carlo <- NA_real_
+n_monte_carlo <- 10000
 
 ## TODO 2: Extract parameter estimates from df_fit
-strength_meanlog <- NA_real_
-strength_sdlog <- NA_real_
+strength_meanlog <- df_fit$estimate[1]
+strength_sdlog <- df_fit$estimate[2]
 
 # Generate samples
 df_norm_sim <-
   tibble(strength = rlnorm(n_monte_carlo, strength_meanlog, strength_sdlog)) %>%
+  mutate(g = g_break(strength))
+
 ## TODO 3: Compute structural response
-  glimpse()
+glimpse(df_norm_sim)
 
 ## NOTE: The following code estimates the POF and a 95% confidence interval
 df_norm_pof <-
@@ -182,25 +190,25 @@ df_norm_pof <-
     pof_lo = pof_est - 1.96 * se,
     pof_hi = pof_est + 1.96 * se
   ) %>%
-  select(pof_lo, pof_est, pof_hi)
+  dplyr::select(pof_lo, pof_est, pof_hi)
 
 df_norm_pof
 ```
 
 - Assuming your scopus is the probability of failure `POF` defined above, does your estimate exhibit real variability, induced variability, or both?
-  - (Your response here)
+  - (Your response here) It exhibits both.
 - Does this confidence interval imply that `POF < 0.03`?
-  - (Your response here)
+  - (Your response here) Yes.
 - Compare this probability with your estimate from q2; is it more or less trustworthy?
-  - (Your response here)
+  - (Your response here) The number of observations has not changed, only a distribution was applied to the data, therefore I would argue that both estimates are equally as trustworthy. However, as it is unsure the distribution being used reflects real-world behavior in the first place, I would go as far as to say that this could be misleading.
 - Does the confidence interval above account for uncertainty arising from the *Monte Carlo approximation*? Why or why not?
-  - (Your response here)
+  - (Your response here) No, this method is a mere implementation of the Monte Carlo approximation with the measured data.
 - Does the confidence interval above account for uncertainty arising from *limited physical tests* (`df_samples`)? Why or why not?
-  - (Your response here)
+  - (Your response here) No, as the distribution is only fitted to the limited physical tests we had in the first place. 
 - What could you do to tighten up the confidence interval?
-  - (Your response here)
+  - (Your response here) Increasing resolution of the Monte Carlo method could be attempted.
 - Can you *confidently* conclude that `POF < 0.03`? Why or why not?
-  - (Your response here)
+  - (Your response here) No, I am still reluctant to reach this conclusion with confidence merely derived from the limited physical tests.
 
 ## A different way to compute the POF
 <!-- --------------------------------------- -->
@@ -236,7 +244,7 @@ estimate_pof <- function(df) {
     pull(estimate)
 
 ## TODO: Estimate the probability of failure using plnorm
-  pof_estimate <- NA
+  pof_estimate <- plnorm(q = L/A, meanlog = strength_meanlog, sdlog = strength_sdlog)
 
   ## NOTE: No need to edit; this last line returns your pof_estimate
   pof_estimate
@@ -249,15 +257,15 @@ df_samples %>% estimate_pof()
 **Observations**:
 
 - How does this estimate compare with your Monte Carlo estimate above?
-  - (Your response here)
+  - (Your response here) It returns a value within the confidence interval.
 - Does this estimate have any uncertainty due to *Monte Carlo approximation*? Why or why not?
-  - (Your response here)
+  - (Your response here) No, the monte carlo method is not being used at all here.
 - With the scopus as the `POF`, would uncertainty due to *Monte Carlo approximation* be induced or real?
-  - (Your response here)
+  - (Your response here) It would be an induced uncertainty.
 - Does this estimate have any uncertainty due to *limited physical tests*? Why or why not?
-  - (Your response here)
+  - (Your response here) This remains, as the number of physical tests remain the same.
 - With the scopus as the `POF`, would uncertainty due to *limited physical tests* be induced or real?
-  - (Your response here)
+  - (Your response here) This would be real, as it is stated at the beginning that physical the tests themselves are assumed to be perfect, and the tests that have already been done is all there is to work with.
 
 ## Quantifying sampling uncertainty
 <!-- --------------------------------------- -->
@@ -284,8 +292,8 @@ df_samples %>%
 **Observations**:
 
 - Does the confidence interval above account for uncertainty arising from *Monte Carlo approximation* of the POF? Why or why not?
-  - (Your response here)
+  - (Your response here) No, this method does not use the Monte Carlo method.
 - Does the confidence interval above account for uncertainty arising from *limited physical tests* (`df_samples`)? Why or why not?
-  - (Your response here)
+  - (Your response here) Yes, it accounts for the limited physical tests, as it resamples the data, rather than applying a specific distribution to it.
 - Can you confidently conclude that `POF < 0.03`? Why or why not?
-  - (Your response here)
+  - (Your response here) Given the results of the bootstrap method, I cannot, as the upper bound is bigger than `POF < 0.03`.

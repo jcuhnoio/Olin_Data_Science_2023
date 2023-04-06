@@ -43,13 +43,14 @@ All the deliverables stated in the rubrics above are due **at midnight** before 
 
 ```{r setup}
 library(tidyverse)
+library(dplyr)
 ```
 
 ### __q1__ Load the population data from c06; simply replace `filename_pop` below.
 
 ```{r q1-task}
 ## TODO: Give the filename for your copy of Table B01003
-filename_pop <- NA_character_
+filename_pop <- "./data/ACSDT5Y2018.B01003-Data.csv"
 
 ## NOTE: No need to edit
 df_pop <-
@@ -82,7 +83,7 @@ This means that for cases listed as `*****` the US Census Bureau recommends trea
 
 ```{r q2-task}
 ## TODO: Give the filename for your copy of Table S1903
-filename_income <- NA_character_
+filename_income <- "./data/ACSST5Y2018.S1903-Data.csv"
 
 ## NOTE: No need to edit
 df_income <-
@@ -96,7 +97,7 @@ Use the following test to check that you downloaded the correct file:
 ## NOTE: No need to edit, use to check you got the right file.
 assertthat::assert_that(
   df_income %>%
-    filter(id == "0500000US01001") %>%
+    filter(Geography == "0500000US01001") %>%
     pull(`Estimate!!Percent Distribution!!FAMILY INCOME BY FAMILY SIZE!!2-person families`)
   == 45.6
 )
@@ -115,13 +116,20 @@ This dataset is in desperate need of some *tidying*. To simplify the task, we'll
 df_q3 <-
   df_income %>%
   select(
-    id,
+    Geography,
     contains("Geographic"),
     contains("median") & matches("\\d-person families")
   ) %>%
-  mutate(across(contains("median"), as.numeric)) %>%
+  mutate(across(contains("median"), as.numeric))
 ## TODO: Pivot the data, rename the columns
-  glimpse()
+df_q3 <-
+  pivot_longer(
+      data = df_q3,
+      cols = contains("FAMILY SIZE!!"),
+      names_to = c(".value"),
+      names_pattern = "(Estimate|Margin of Error)"
+    )
+  glimpse(df_q3)
 ```
 
 Use the following tests to check your work:

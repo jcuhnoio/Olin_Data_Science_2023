@@ -163,12 +163,13 @@ df_stang_long <-
       names_sep = "_",
       cols = c(E_00, nu_00, E_45, nu_45, E_90, nu_90)
     ) %>% 
-    mutate(angle = as.integer(angle))
+    mutate(angle = as.integer(angle)) %>% 
+    filter(nu > 0)
 
 df_stang_long
 ```
 
-    ## # A tibble: 27 × 5
+    ## # A tibble: 26 × 5
     ##    thick alloy   angle     E    nu
     ##    <dbl> <chr>   <int> <dbl> <dbl>
     ##  1 0.022 al_24st     0 10600 0.321
@@ -181,7 +182,7 @@ df_stang_long
     ##  8 0.032 al_24st    45 10400 0.318
     ##  9 0.032 al_24st    90 10300 0.322
     ## 10 0.032 al_24st     0 10300 0.319
-    ## # … with 17 more rows
+    ## # … with 16 more rows
 
 Use the following tests to check your work.
 
@@ -200,7 +201,7 @@ assertthat::assert_that(
 
 ``` r
 ## Dimensions
-assertthat::assert_that(all(dim(df_stang_long) == c(27, 5))) # Shouldn't this be 27 instead of 26?? There are three angle values for each type: 0, 45, 90, and there are 9 observations total, so 9x3 = 27?? How is it 26?? boohoo i am so confused
+assertthat::assert_that(all(dim(df_stang_long) == c(26, 5)))
 ```
 
     ## [1] TRUE
@@ -235,7 +236,7 @@ df_stang_long %>%
   group_by(thick)
 ```
 
-    ## # A tibble: 27 × 5
+    ## # A tibble: 26 × 5
     ## # Groups:   thick [4]
     ##    thick alloy   angle     E    nu
     ##    <dbl> <chr>   <int> <dbl> <dbl>
@@ -249,14 +250,73 @@ df_stang_long %>%
     ##  8 0.032 al_24st    45 10400 0.318
     ##  9 0.032 al_24st    90 10300 0.322
     ## 10 0.032 al_24st     0 10300 0.319
-    ## # … with 17 more rows
+    ## # … with 16 more rows
+
+``` r
+std_nu <- sd(df_stang_long$nu)
+print("std_nu: ")
+```
+
+    ## [1] "std_nu: "
+
+``` r
+print(std_nu)
+```
+
+    ## [1] 0.006742745
+
+``` r
+std_E <- sd(df_stang_long$E)
+print("std_E: ")
+```
+
+    ## [1] "std_E: "
+
+``` r
+print(std_E)
+```
+
+    ## [1] 268.2421
+
+``` r
+df_stang_long %>% distinct(alloy)
+```
+
+    ## # A tibble: 1 × 1
+    ##   alloy  
+    ##   <chr>  
+    ## 1 al_24st
+
+``` r
+df_stang_long %>% distinct(angle)
+```
+
+    ## # A tibble: 3 × 1
+    ##   angle
+    ##   <int>
+    ## 1     0
+    ## 2    45
+    ## 3    90
+
+``` r
+df_stang_long %>% distinct(thick)
+```
+
+    ## # A tibble: 4 × 1
+    ##   thick
+    ##   <dbl>
+    ## 1 0.022
+    ## 2 0.032
+    ## 3 0.064
+    ## 4 0.081
 
 **Observations**:
 
 - Is there “one true value” for the material properties of Aluminum?
   - According to the definition of material properties, there should
     exist an exclusive value assuming the exact same material. However,
-    according to the data, the values seem to vary.
+    according to the data, the values seem to vary, as the standard
+    deviation for both Young’s modulus and nu are nonzero.
 - How many aluminum alloys are in this dataset? How do you know?
   - There are at least four alloys of the same material with varying
     thickness, all made of 24ST Aluminium. It should be in the range of
@@ -329,7 +389,9 @@ df_stang_long %>%
     true, the measured `E` values must be the same, regardless of
     thickness. However, this graph is not conclusive, either. Since
     values vary even for the same thickness, there is a possibility of
-    another factor that affects `E`.
+    another factor that affects `E`. However, from looking at the points
+    of data, there seems to be some sort of grouping for thickness
+    values, a behavior mainly exhibited by the `0.081` group.
 
 # References
 

@@ -170,9 +170,9 @@ df_q1 %>%
 
 **Observations**: - Write your observations here! - (Your response here)
 The recreation of the table has more significant figures. - Why might
-your table differ from Michelson’s? - (Your response here) Considering
-the time when the study was done, the mean could have been calculated by
-hand, leaving some digits behind.
+your table differ from Michelson’s? - (Your response here) When
+Michelson conducted the experiment, he could have rounded numbers to
+account for error.
 
 The `Velocity` values in the dataset are the speed of light *in air*;
 Michelson introduced a couple of adjustments to estimate the speed of
@@ -243,7 +243,9 @@ cat("Actual error:", error_real)
 uncertainty) greater or less than the true error? - (Your response here)
 Michelson’s estimate is less than the true error. - Make a quantitative
 comparison between Michelson’s uncertainty and his error. - (Your
-response here) Michelson’s uncertainty is smaller than his error.
+response here) Michelson’s uncertainty was 92 km/s, while the actual
+error was 151.542 km/s, which means the error was about 1.5 times the
+uncertainty.
 
 The following plot shows all of Michelson’s data as a [control
 chart](https://en.wikipedia.org/wiki/Control_chart); this sort of plot
@@ -320,16 +322,24 @@ df_q2 %>%
 
 ![](c02-michelson-assignment_files/figure-gfm/q4-cf-real-simulated-1.png)<!-- -->
 
-**Observations**: Similarities - (your responses here) The sign of the
-slope of the mean curve matches. Differences - (your responses here) The
-actual values of the dots, and therefore the mean values, vary.
+**Observations**: Similarities - (your responses here) The deviation of
+the points exhibit a similar range. Differences - (your responses here)
+The actual values of the dots, and therefore the mean values, vary.
 
 ### **q5** You have access to a few other variables. Construct a few visualizations of `VelocityVacuum` against these other factors. Are there other patterns in the data that might help explain the difference between Michelson’s estimate and `LIGHTSPEED_VACUUM`?
 
 ``` r
 error_vs_temp <- df_michelson %>% 
   summarize("Real_error" = LIGHTSPEED_VACUUM - Velocity, Temp)
+```
 
+    ## Warning: Returning more (or less) than 1 row per `summarise()` group was deprecated in
+    ## dplyr 1.1.0.
+    ## ℹ Please use `reframe()` instead.
+    ## ℹ When switching from `summarise()` to `reframe()`, remember that `reframe()`
+    ##   always returns an ungrouped data frame and adjust accordingly.
+
+``` r
 error_vs_temp %>% 
   ggplot(aes(x = Temp, y = Real_error)) +
   geom_point() +
@@ -341,7 +351,15 @@ error_vs_temp %>%
 ``` r
 abserror_vs_distinctness <- df_michelson %>% 
   summarize("Real_error_abs" = abs(LIGHTSPEED_VACUUM - Velocity), Distinctness)
+```
 
+    ## Warning: Returning more (or less) than 1 row per `summarise()` group was deprecated in
+    ## dplyr 1.1.0.
+    ## ℹ Please use `reframe()` instead.
+    ## ℹ When switching from `summarise()` to `reframe()`, remember that `reframe()`
+    ##   always returns an ungrouped data frame and adjust accordingly.
+
+``` r
 abserror_vs_distinctness %>% 
   ggplot(aes(x = Distinctness, y = Real_error_abs)) +
   geom_boxplot()
@@ -352,12 +370,13 @@ abserror_vs_distinctness %>%
 **Observations**:
 
 Upon implementing a regression line in the Error vs. Temperature graph,
-it shows signs that might suggest a correlation between those two
-variables. Also, there doesn’t seem to be much of a correlation between
-error and the “distinctness” of the observation. Moreover, while it was
-expected that a “better” distinctness of an observation would lead to
-less error, as the distinctness increased, so did the interquartile
-range.
+the regression line shows that there may be a correlation. However, it
+is to be noted that simply looking at the points make it clear that a
+correlation is quite unlikely. Also, there doesn’t seem to be much of a
+correlation between error and the “distinctness” of the observation.
+Moreover, while it was expected that a “better” distinctness of an
+observation would lead to less error, as the distinctness increased, so
+did the interquartile range.
 
 ## Bibliography
 

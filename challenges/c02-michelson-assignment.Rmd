@@ -96,7 +96,7 @@ df_q1 %>%
 - Write your observations here!
   - (Your response here) The recreation of the table has more significant figures.
 - Why might your table differ from Michelson's?
-  - (Your response here) Considering the time when the study was done, the mean could have been calculated by hand, leaving some digits behind.
+  - (Your response here) When Michelson conducted the experiment, he could have rounded numbers to account for error.
 
 The `Velocity` values in the dataset are the speed of light *in air*; Michelson
 introduced a couple of adjustments to estimate the speed of light in a vacuum.
@@ -147,7 +147,7 @@ cat("Actual error:", error_real)
 - Is Michelson's estimate of the error (his uncertainty) greater or less than the true error?
   - (Your response here) Michelson's estimate is less than the true error.
 - Make a quantitative comparison between Michelson's uncertainty and his error.
-  - (Your response here) Michelson's uncertainty is smaller than his error.
+  - (Your response here) Michelson's uncertainty was 92 km/s, while the actual error was 151.542 km/s, which means the error was about 1.5 times the uncertainty. 
 
 The following plot shows all of Michelson's data as a [control chart](https://en.wikipedia.org/wiki/Control_chart); this sort of plot is common in manufacturing, where it is used to help determine if a manufacturing process is under [statistical control](https://en.wikipedia.org/wiki/Statistical_process_control). Each dot is one of Michelson's measurements, and the grey line connects the mean taken for each day. The same plot also shows simulated data using a probability model. We'll get into statistics later in the course; for now, let's focus on understanding what real and simulated data tend to look like.
 
@@ -212,7 +212,7 @@ df_q2 %>%
 
 **Observations**:
 Similarities
-- (your responses here) The sign of the slope of the mean curve matches.
+- (your responses here) The deviation of the points exhibit a similar range.
 Differences
 - (your responses here) The actual values of the dots, and therefore the mean values, vary.
 
@@ -238,7 +238,7 @@ abserror_vs_distinctness %>%
 
 **Observations**:
 
-Upon implementing a regression line in the Error vs. Temperature graph, it shows signs that might suggest a correlation between those two variables. Also, there doesn't seem to be much of a correlation between error and the "distinctness" of the observation. Moreover, while it was expected that a "better" distinctness of an observation would lead to less error, as the distinctness increased, so did the interquartile range.
+Upon implementing a regression line in the Error vs. Temperature graph, the regression line shows that there may be a correlation. However, it is to be noted that simply looking at the points make it clear that a correlation is quite unlikely. Also, there doesn't seem to be much of a correlation between error and the "distinctness" of the observation. Moreover, while it was expected that a "better" distinctness of an observation would lead to less error, as the distinctness increased, so did the interquartile range.
 
 
 ## Bibliography

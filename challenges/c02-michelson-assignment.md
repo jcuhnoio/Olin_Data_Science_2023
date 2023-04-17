@@ -170,9 +170,8 @@ df_q1 %>%
 
 **Observations**: - Write your observations here! - (Your response here)
 The recreation of the table has more significant figures. - Why might
-your table differ from Michelson’s? - (Your response here) When
-Michelson conducted the experiment, he could have rounded numbers to
-account for error.
+your table differ from Michelson’s? - (Your response here) He could have
+rounded the numbers to account for precision of his measurements.
 
 The `Velocity` values in the dataset are the speed of light *in air*;
 Michelson introduced a couple of adjustments to estimate the speed of

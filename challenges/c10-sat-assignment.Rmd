@@ -57,29 +57,30 @@ All the deliverables stated in the rubrics above are due **at midnight** before 
 
 ```{r q1-task}
 ## TODO:
-df_sat <- NA
+df_sat <- read_excel("./data/sat.xls")
 
 ## TODO: Do your "first checks"
+df_sat %>% glimpse
 ```
 
 **Observations**:
 
 - Fill in the following "data dictionary"
 
-| Column     | Meaning |
-|------------|---------|
-| `high_GPA` | ???     |
-| `math_SAT` | ???     |
-| `verb_SAT` | ???     |
-| `comp_GPA` | ???     |
-| `univ_GPA` | ???     |
+| Column     | Meaning                  |
+|------------|--------------------------|
+| `high_GPA` | High school GPA          |
+| `math_SAT` | Math SAT score           |
+| `verb_SAT` | Verbal SAT score         |
+| `comp_GPA` | Computer science GPA     |
+| `univ_GPA` | Overall university GPA   |
 
 - What information do we have about these students?
-  - (Your response here)
+  - (Your response here) Their major, SAT score, GPA from high school, computer science, and university, and that they are all from the same university.
 - What kinds of information *do we not have* about these students?
-  - (Your response here)
+  - (Your response here) Everything else about them, including high school activities.
 - Based on these missing variables, what possible effects could be present in the data that we would have *no way of detecting*?
-  - (Your response here)
+  - (Your response here) Academic dishonesty, and students taking different SAT exams could pose an issue.
 
 # Analysis with Hypothesis Testing
 <!-- ----------------------------------------------------------------------- -->

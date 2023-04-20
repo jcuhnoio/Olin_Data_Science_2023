@@ -422,13 +422,13 @@ cor.test(df_boot$high_GPA, df_boot$univ_GPA)
     ##  Pearson's product-moment correlation
     ## 
     ## data:  df_boot$high_GPA and df_boot$univ_GPA
-    ## t = 402.24, df = 104998, p-value < 2.2e-16
+    ## t = 399.68, df = 104998, p-value < 2.2e-16
     ## alternative hypothesis: true correlation is not equal to 0
     ## 95 percent confidence interval:
-    ##  0.7763522 0.7811133
+    ##  0.7743774 0.7791752
     ## sample estimates:
-    ##      cor 
-    ## 0.778744
+    ##       cor 
+    ## 0.7767876
 
 **Observations**:
 
@@ -531,9 +531,9 @@ df_composite %>%
 
 - What is the confidence interval on the coefficient of `both_SAT`? Is
   this coefficient significantly different from zero?
-  - (Your response here) The difference in `conf.low` and `conf.high`
-    for `both_SAT` in the model is \~0.0013, which I deem the difference
-    from zero as insignificant.
+  - (Your response here) \[`conf.low` \~= 0.0019, `conf.high` \~=
+    0.0034\] The coefficient is in an interval where it is significantly
+    nonzero.
 - By itself, how well does `both_SAT` predict `univ_GPA`?
   - (Your response here) With the plotted model, the trend is definitely
     present in the regression line. However, there seem to be many
@@ -547,8 +547,12 @@ further.
 
 ``` r
 ## TODO: Fit and assess models with predictors both_SAT + high_GPA, and high_GPA alone
+#--------------------- both_SAT + high_GPA
+df_composite <- df_composite %>% 
+  mutate(high_add = both_SAT + high_GPA)
+
 df_composite %>% 
-  ggplot(aes(x = high_GPA, y = univ_GPA)) +
+  ggplot(aes(x = high_add, y = univ_GPA)) +
   geom_point() +
   geom_smooth(method = "lm")
 ```
@@ -558,11 +562,26 @@ df_composite %>%
 ![](c10-sat-assignment_files/figure-gfm/q7-task-1.png)<!-- -->
 
 ``` r
-df_composite <- df_composite %>% 
-  mutate(high_prod = (high_GPA^5)*both_SAT)
+fit_add <- lm(univ_GPA ~ high_add, data = df_composite)
+
+fit_add %>%
+  tidy(
+    conf.int = TRUE,
+    conf.level = 0.99
+  )
+```
+
+    ## # A tibble: 2 × 7
+    ##   term        estimate std.error statistic  p.value conf.low conf.high
+    ##   <chr>          <dbl>     <dbl>     <dbl>    <dbl>    <dbl>     <dbl>
+    ## 1 (Intercept) -0.174    0.351       -0.494 6.22e- 1 -1.10      0.749  
+    ## 2 high_add     0.00273  0.000286     9.56  6.91e-16  0.00198   0.00348
+
+``` r
+#--------------------- high_GPA
 
 df_composite %>% 
-  ggplot(aes(x = high_prod, y = univ_GPA)) +
+  ggplot(aes(x = high_GPA, y = univ_GPA)) +
   geom_point() +
   geom_smooth(method = "lm")
 ```
@@ -572,9 +591,9 @@ df_composite %>%
 ![](c10-sat-assignment_files/figure-gfm/q7-task-2.png)<!-- -->
 
 ``` r
-fit_both <- lm(univ_GPA ~ high_prod, data = df_composite)
+fit_high <- lm(univ_GPA ~ high_GPA, data = df_composite)
 
-fit_both %>%
+fit_high %>%
   tidy(
     conf.int = TRUE,
     conf.level = 0.99
@@ -582,21 +601,62 @@ fit_both %>%
 ```
 
     ## # A tibble: 2 × 7
-    ##   term           estimate    std.error statistic  p.value    conf.low  conf.high
-    ##   <chr>             <dbl>        <dbl>     <dbl>    <dbl>       <dbl>      <dbl>
-    ## 1 (Intercept) 2.75        0.0499            55.0 3.44e-78 2.62        2.88      
-    ## 2 high_prod   0.000000947 0.0000000884      10.7 1.92e-18 0.000000715 0.00000118
+    ##   term        estimate std.error statistic  p.value conf.low conf.high
+    ##   <chr>          <dbl>     <dbl>     <dbl>    <dbl>    <dbl>     <dbl>
+    ## 1 (Intercept)    1.10     0.167       6.58 1.98e- 9    0.660     1.53 
+    ## 2 high_GPA       0.675    0.0534     12.6  1.18e-22    0.535     0.815
+
+``` r
+#--------------------- 0.00329 * high_GPA^1.3 * both_SAT^0.7 + 1
+
+df_composite <- df_composite %>% 
+  mutate(high_prod = 0.00329 * high_GPA^1.3 * both_SAT^0.7 + 1)
+
+df_composite %>% 
+  ggplot(aes(x = high_prod, y = univ_GPA)) +
+  geom_point() +
+  geom_smooth(method = "lm")
+```
+
+    ## `geom_smooth()` using formula = 'y ~ x'
+
+![](c10-sat-assignment_files/figure-gfm/q7-task-3.png)<!-- -->
+
+``` r
+fit_both_powers <- lm(univ_GPA ~ high_prod, data = df_composite)
+
+fit_both_powers %>%
+  tidy(
+    conf.int = TRUE,
+    conf.level = 0.99
+  )
+```
+
+    ## # A tibble: 2 × 7
+    ##   term        estimate std.error statistic  p.value conf.low conf.high
+    ##   <chr>          <dbl>     <dbl>     <dbl>    <dbl>    <dbl>     <dbl>
+    ## 1 (Intercept)    1.21     0.156       7.80 5.31e-12    0.805     1.62 
+    ## 2 high_prod      0.635    0.0496     12.8  5.23e-23    0.505     0.765
 
 **Observations**:
 
 - How well do these models perform, compared to the one you built in q6?
-  - (Your response here)
+  - (Your response here) For simply adding, the linear model does not
+    seem to make a significant difference. However, for using `high_GPA`
+    for the predictor, `std.error` for the `(Intercept)`, which the
+    scale should not change as `univ_GPA` is a fixed scale, have a
+    smaller value compared to the one in q6. This is an indicator that
+    the model here may perform better than the one built in q6. Also,
+    applying different computations to include `high_GPA` and `both_SAT`
+    may alter how well the model performs, from looking at the last
+    model.
 - What is the confidence interval on the coefficient of `both_SAT` when
   including `high_GPA` as a predictor?? Is this coefficient
   significantly different from zero?
-  - (Your response here)
+  - (Your response here) \[`conf.low` \~= 0.0019, `conf.high` \~=
+    0.0034\] The coefficient is significantly nonzero.
 - How do the hypothesis test results compare with the results in q6?
-  - (Your response here)
+  - (Your response here) $$\beta \neq 0$$
 
 ## Synthesize
 
@@ -610,11 +670,20 @@ Before closing, let’s synthesize a bit from the analyses above.
 
 - Between `both_SAT` and `high_GPA`, which single variable would you
   choose to predict `univ_GPA`? Why?
-  - (Your response here)
+  - (Your response here) If I had to choose one, I would choose
+    `high_GPA`, as they exhibit similar distribution patterns as seen
+    from histograms.
 - Is `both_SAT` an effective predictor of `univ_GPA`? What specific
   pieces of evidence do you have in favor of `both_SAT` being effective?
   What specific pieces of evidence do you have against?
-  - (Your response here)
+  - (Your response here) It boils down to what one would deem as “an
+    effective predictor”. From visualizations of the linear model
+    generated by `both_SAT`, it clearly shows that there is a trend
+    among the data points. However, more points were outside the
+    confidence interval of the linear model than were inside, some
+    performing better than expected by the model, some worse. If one
+    wanted a rough estimate, it will be an effective predictor. However,
+    for more specific purposes, it will not be as effective.
 
 # End Notes
 

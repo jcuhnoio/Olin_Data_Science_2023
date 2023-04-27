@@ -163,7 +163,8 @@ fit_nonphysical <-
 print("--------- baseline ---------")
 summary(fit_baseline)
 predictions_baseline <- fit_baseline %>% predict(df_validate)
-error_baseline <- postResample(predictions_baseline, df_validate)
+error_baseline <- data.frame(postResample(predictions_baseline, df_validate$T_norm))
+print(error_baseline)
 
 df_psaap %>% 
   ggplot() +
@@ -173,6 +174,10 @@ df_psaap %>%
 # --------- cheat ---------
 print("--------- cheat ---------")
 summary(fit_cheat)
+predictions_cheat <- fit_cheat %>% predict(df_validate)
+error_cheat <- data.frame(postResample(predictions_cheat, df_validate$T_norm))
+print(error_cheat)
+
 df_psaap %>% 
   ggplot() +
   geom_point(aes(x = avg_T, y = T_norm)) +
@@ -181,6 +186,10 @@ df_psaap %>%
 # --------- nonphysical ---------
 print("--------- nonphysical ---------")
 summary(fit_nonphysical)
+predictions_nonphysical <- fit_nonphysical %>% predict(df_validate)
+error_nonphysical <- data.frame(postResample(predictions_nonphysical, df_validate$T_norm))
+print(error_nonphysical)
+
 df_psaap %>% 
   ggplot() +
   geom_point(aes(x = idx, y = T_norm)) +
@@ -205,17 +214,30 @@ df_psaap %>%
 ```{r q4-task}
 ## TODO: Fit a model for T_norm using only *principled* predictors, try to
 ##       optimize your validation error.
-fit_q4 <- NA
+
+fit_q4 <-
+  lm(data = df_train, formula = T_norm ~ (x * L* I_0))
+
+df_psaap %>% 
+  ggplot() +
+  geom_point(aes(x = L, y = T_norm, color = df_psaap$I_0)) +
+  scale_colour_gradient(low = "red", high = "green") +
+  geom_smooth(data = df_train, aes(x = L, y = T_norm), method = 'lm')
 
 ## NOTE: No need to change these error calculations; use them to
 ##       help define your model
-rsquare(fit_q4, df_train)
-rsquare(fit_q4, df_validate)
+# rsquare(fit_q4, df_train)
+# rsquare(fit_q4, df_validate)
+
+predictions_q4 <- fit_q4 %>% predict(df_validate)
+error_q4 <- data.frame(postResample(predictions_q4, df_validate$T_norm))
+print(error_q4)
+
 ```
 
 **Observations**:
 
--   (Use this space to document which predictors seem useful.)
+-   One thing that could be considered is to only look at T_norm values only for a certain value of `x` across the data points. For the purpose of this model, the relationship between `L` and `T_norm` was examined, and as expected, a positive correlation is present. However, since there are points for varying `x` values, the plots are not as tidy as they could be. Also, the intensity value is examined here as well to provide a bit more insight into data. Therefore, for the model, a linear combination of `L`, `I_0`, and `x` was used.
 -   *Note*: You don't just have to fiddle with `formula`! Remember that you have a whole toolkit of *EDA* tools
 
 ## Contrasting CI and PI
@@ -307,7 +329,7 @@ bind_rows(
   ggplot(aes(T_norm, pi_fit)) +
   geom_abline(slope = 1, intercept = 0, color = "grey80", size = 2) +
   geom_errorbar(
-    aes(ymin = pi_lwr, ymax = pi_upr),
+    aes(ymin = pi_lwr, ymax = pi_upr), color = "blue",
     width = 0
   ) +
   geom_point() +
@@ -324,11 +346,11 @@ bind_rows(
 **Observations**:
 
 -   Which model tends to be more accurate? How can you tell from this predicted-vs-actual plot?
-    -   (Your response here)
+    -   (Your response here) In terms of accuracy, from what is visible from the plot, there is not much of a difference, as both models' intervals seem land on the `Predicted T_norm vs Actual T_norm` line.
 -   Which model tends to be *more confident* in its predictions? Put differently, which model has *narrower prediction intervals*?
-    -   (Your response here)
+    -   (Your response here) The q4 model has moderately narrower prediction intervals.
 -   How many predictors does the `fit_simple` model need in order to make a prediction? What about your model `fit_q4`?
-    -   (Your response here)
+    -   (Your response here) Technically, one predictor is required. However, having just one predictor may not yield the best results.
 
 Based on these results, you might be tempted to always throw every reasonable variable into the model. For some cases, that might be the best choice. However, some variables might be *outside our control*; for example, variables involving human behavior cannot be fully under our control. Other variables may be *too difficult to measure*; for example, it is *in theory* possible to predict the strength of a component by having detailed knowledge of its microstructure. However, it is *patently infeasible* to do a detailed study of *every single component* that gets used in an airplane.
 
@@ -363,22 +385,40 @@ pr_level <- 0.8
 #        use the validation data to check your uncertainty estimates, and 
 #        make a recommendation on a *dependable range* of values for T_norm
 #        at the point `df_design`
-fit_q6 <- NA
 
+fit_q6 <- lm(data = df_train, formula = T_norm ~ (U_0*L*W))
+
+q6_intervals <-
+  df_design %>%
+  add_uncertainties(fit_q6, interval = "prediction", prefix = "pi")
+
+print(q6_intervals)
+
+q6_validate <- df_validate %>%
+  mutate(
+    interval_true = (q6_intervals$pi_lwr < T_norm) & (q6_intervals$pi_upr > T_norm)
+  ) %>% 
+  summarize(
+    total = n(),
+    n_true = sum(interval_true),
+    pr_true = n_true / total
+  )
+
+print(q6_validate)
 ```
 
 **Recommendation**:
 
 -   How much do you trust your model? Why?
-    -   (Your response here)
+    -   (Your response here) I would not trust this model to inform the actual building process, but as a starting point to explore which variables come into play. As an example of this process, omitting `x` entirely has greatly increased the accuracy of the model itself, but leaves out information that may be crucial in the building process. An interesting caveat can be seen here, where omitting certain values increase the probability of the prediction interval being correct, yet increase the prediction interval greatly.
 -   What kind of interval---confidence or prediction---would you use for this task, and why?
-    -   (Your response here)
+    -   (Your response here) Prediction, since a prediction is being made with the values provided in `df_design`.
 -   What fraction of validation cases lie within the interval you predict? How does this compare with `pr_level`?
-    -   (Your response here)
+    -   (Your response here) 91.6% lies within the interval, which is around 12% greater than `pr_level`.
 -   What interval for `T_norm` would you recommend the design team to plan around?
-    -   (Your response here)
+    -   (Your response here) With the given `df_design`, `T_norm` can range between 2.40 to 0.23, which is an awfully large interval to be considering.
 -   Are there any other recommendations you would provide?
-    -   (Your response here)
+    -   (Your response here) The company should not hire me as a data scientist just yet.
 
 *Bonus*: One way you could take this analysis further is to recommend which other variables the design team should tightly control. You could do this by fixing values in `df_design` and adding them to the model. An exercise you could carry out would be to systematically test the variables to see which ones the design team should more tightly control.
 

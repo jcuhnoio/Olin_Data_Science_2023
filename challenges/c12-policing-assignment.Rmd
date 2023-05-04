@@ -48,7 +48,7 @@ library(broom)
 
 ```{r q1-task}
 ## TODO: Download the data, move to your data folder, and load it
-filename <- NA_character_
+filename <- "./data/yg821jf8611_ma_statewide_2020_04_01.rds"
 df_data <- readRDS(filename)
 ```
 
@@ -56,6 +56,10 @@ df_data <- readRDS(filename)
 <!-- -------------------------------------------------- -->
 
 ### __q2__ Do your "first checks" on the dataset. What are the basic facts about this dataset?
+
+```{r q2}
+summary(df_data)
+```
 
 
 Note that we have both a `subject_race` and `race_Raw` column. There are a few possibilities as to what `race_Raw` represents:
@@ -69,14 +73,25 @@ Let's try to distinguish between these two possibilities.
 
 ```{r q3-task}
 ## TODO: Determine the factor levels for subject_race and raw_Race
+noquote("-------- subject_race --------")
+noquote("")
+unique(df_data$subject_race)
+
+noquote("-------- raw_Race --------")
+noquote("")
+unique(df_data$raw_Race)
 ```
 
 **Observations**:
 
 - What are the unique values for `subject_race`?
+  white, hispanic, black, asian/pacific islander, other, NA, unknown
 - What are the unique values for `raw_Race`?
+  White, Hispanic, Black, Asian or Pacific Islander, Middle Eastern or East Indian (South Asian), American Indian or Alaskan Native, NA, None - for no operator present citations only, A
 - What is the overlap between the two sets?
+  white, hispanic, black, asian/pacific islander, other, NA
 - What is the difference between the two sets?
+  middle eastern or east indian (south asian), american indian or alaskan native, A; raw_Race is more inclusive 
 
 ### __q4__ Check whether `subject_race` and `raw_Race` match for a large fraction of cases. Which of the two hypotheses above is most likely, based on your results?
 
@@ -84,6 +99,29 @@ Let's try to distinguish between these two possibilities.
 
 ```{r q4-task}
 ## TODO: Devise your own way to test the hypothesis posed above.
+race_clean = function(str_col) {
+  str_col %>% 
+    as.character() %>% 
+    str_to_lower() %>% 
+    str_replace_all("^A$", "unknown") %>% 
+    str_replace_all("^None - for no operator present citations only$", "unknown") %>% 
+    replace_na("unknown")
+}
+
+df_cleaned <- df_data %>% 
+  mutate(
+    raw_Race = race_clean(raw_Race),
+    subject_race = race_clean(subject_race)
+  )
+
+df_cleaned %>% 
+  mutate(race_match = raw_Race == subject_race) %>% 
+  summarize(
+    matches = sum(race_match),
+    nonmatches = n() - sum(race_match),
+    match_rate = matches/n()
+  )
+
 ```
 
 **Observations**
@@ -95,7 +133,7 @@ Between the two hypotheses:
 
 which is most plausible, based on your results?
 
-- (Your response here)
+- (Your response here) The second hypothesis is more plausible, as 94% of cases having the same race for the police officer and subject is unlikely.
 
 ## Vis
 <!-- ------------------------- -->
@@ -103,16 +141,32 @@ which is most plausible, based on your results?
 ### __q5__ Compare the *arrest rate*---the fraction of total cases in which the subject was arrested---across different factors. Create as many visuals (or tables) as you need, but make sure to check the trends across all of the `subject` variables. Answer the questions under *observations* below.
 
 (Note: Create as many chunks and visuals as you need)
+```{r}
+df_arrested <- df_cleaned %>% 
+  filter(arrest_made == TRUE)
+
+df_arrested %>% 
+  ggplot(aes(x = subject_age)) +
+  geom_histogram()
+
+df_arrested %>% 
+  ggplot(aes(x = subject_sex, fill = subject_sex)) +
+  geom_bar()
+  
+df_arrested %>% 
+  ggplot(aes(x = subject_race, fill = subject_race)) +
+  geom_bar()
+```
 
 
 **Observations**:
 
 - How does `arrest_rate` tend to vary with `subject_age`?
-  - (Your response here)
+  - (Your response here) Arrest rates ramp up rapidly from the lowest age to the mid 20s, then winds down more gradually after that.
 - How does `arrest_rate` tend to vary with `subject_sex`?
-  - (Your response here)
+  - (Your response here) Males are predominantly arrested.
 - How does `arrest_rate` tend to vary with `subject_race`?
-  - (Your response here)
+  - (Your response here) `white` was the most frequently arrested race by a substantial margin, followed by `hispanic`, `black`, and `asia/pacific islander`.
 
 # Modeling
 <!-- -------------------------------------------------- -->
@@ -140,9 +194,9 @@ fit_q6 %>% tidy()
 **Observations**:
 
 - Which `subject_race` levels are included in fitting the model?
-  - (Your response here)
+  - (Your response here) white, black, hispanic
 - Which `subject_race` levels have terms in the model?
-  - (Your response here)
+  - (Your response here) hispanic, white
 
 You should find that each factor in the model has a level *missing* in its set of terms. This is because R represents factors against a *reference level*: The model treats one factor level as "default", and each factor model term represents a change from that "default" behavior. For instance, the model above treats `subject_sex==male` as the reference level, so the `subject_sexfemale` term represents the *change in probability* of arrest due to a person being female (rather than male).
 
@@ -155,18 +209,28 @@ By default `glm` uses the first factor level present as the reference level. The
 ```{r q7-task}
 ## TODO: Re-fit the logistic regression, but set "white" as the reference
 ## level for subject_race
-
+fit_q7 <-
+  glm(
+    formula = arrest_made ~ subject_age + subject_race + subject_sex,
+    data = df_data %>%
+      filter(
+        !is.na(arrest_made),
+        subject_race %in% c("white", "black", "hispanic")
+      ) %>% 
+      mutate(subject_race = fct_relevel(factor(subject_race), "white")),
+    family = "binomial"
+  )
 fit_q7 %>% tidy()
 ```
 
 **Observations**:
 
 - Which `subject_race` level has the highest probability of being arrested, according to this model? Which has the lowest probability?
-  - (Your response here)
+  - (Your response here) Hispanic is highest, while white is lowest.
 - What could explain this difference in probabilities of arrest across race? List **multiple** possibilities.
-  - (Your response here)
+  - (Your response here) Racial bias, cultural and behavioral discrepancies in different communities with different racial compositions
 - Look at the sent of variables in the dataset; do any of the columns relate to a potential explanation you listed?
-  - (Your response here)
+  - (Your response here) The location column may come into play when analyzing the originating community of the subject.
 
 One way we can explain differential arrest rates is to include some measure indicating the presence of an arrestable offense. We'll do this in a particular way in the next task.
 
@@ -175,21 +239,93 @@ One way we can explain differential arrest rates is to include some measure indi
 ```{r q8-task}
 ## TODO: Repeat the modeling above, but control for whether contraband was found
 ## during the police stop
+fit_q8 <-
+  glm(
+    formula = arrest_made ~ subject_age + subject_race + subject_sex + contraband_found,
+    data = df_data %>%
+      filter(
+        !is.na(arrest_made),
+        subject_race %in% c("white", "black", "hispanic")
+      ) %>% 
+      mutate(subject_race = fct_relevel(factor(subject_race), "white")),
+    family = "binomial"
+  )
+
 fit_q8 %>% tidy()
 ```
 
 **Observations**:
 
 - How does controlling for found contraband affect the `subject_race` terms in the model?
-  - (Your response here)
+  - (Your response here) While it does have correlation to the arrest rate, discrepancy still exists across `subject_race` values.
 - What does the *finding of contraband* tell us about the stop? What does it *not* tell us about the stop?
-  - (Your response here)
+  - (Your response here) The finding of contraband is a stronger indicator of arrest rate than race, but still does not prove that racial bias is false.
 
 ### __q9__ Go deeper: Pose at least one more question about the data and fit at least one more model in support of answering that question.
+## Do different types of contraband affect arrest rate? (drugs weapons alcohol)
+```{r}
+fit_drugs <-
+  glm(
+    formula = arrest_made ~ subject_age + subject_race + subject_sex + contraband_drugs,
+    data = df_data %>%
+      filter(
+        !is.na(arrest_made),
+        subject_race %in% c("white", "black", "hispanic")
+      ) %>% 
+      mutate(subject_race = fct_relevel(factor(subject_race), "white")),
+    family = "binomial"
+  )
+
+fit_drugs %>% tidy()
+
+fit_weapons <-
+  glm(
+    formula = arrest_made ~ subject_age + subject_race + subject_sex + contraband_weapons,
+    data = df_data %>%
+      filter(
+        !is.na(arrest_made),
+        subject_race %in% c("white", "black", "hispanic")
+      ) %>% 
+      mutate(subject_race = fct_relevel(factor(subject_race), "white")),
+    family = "binomial"
+  )
+
+fit_weapons %>% tidy()
+
+fit_alcohol <-
+  glm(
+    formula = arrest_made ~ subject_age + subject_race + subject_sex + contraband_alcohol,
+    data = df_data %>%
+      filter(
+        !is.na(arrest_made),
+        subject_race %in% c("white", "black", "hispanic")
+      ) %>% 
+      mutate(subject_race = fct_relevel(factor(subject_race), "white")),
+    family = "binomial"
+  )
+
+fit_alcohol %>% tidy()
+
+fit_other <-
+  glm(
+    formula = arrest_made ~ subject_age + subject_race + subject_sex + contraband_other,
+    data = df_data %>%
+      filter(
+        !is.na(arrest_made),
+        subject_race %in% c("white", "black", "hispanic")
+      ) %>% 
+      mutate(subject_race = fct_relevel(factor(subject_race), "white")),
+    family = "binomial"
+  )
+
+fit_other %>% tidy()
+```
 
 **Observations**:
 
 - Document your question and findings
+
+It is interesting that the finding of alcohol has such a big impact on the arrest rate even compared to other contraband items. From my perspective, while I would never drink and drive, it would be more likely that I will ever have alcohol in my car than drugs or weapons, which made this observation more interesting. Considering that all of these police encounters are related to driving, it goes to show the tolerance for drunk driving. However, even with such obvious factors for arrest, it was apparent that race was still playing a role in these encounters.
 
 ## Further Reading
 <!-- -------------------------------------------------- -->

@@ -196,13 +196,13 @@ df_norm_pof
 ```
 
 - Assuming your scopus is the probability of failure `POF` defined above, does your estimate exhibit real variability, induced variability, or both?
-  - (Your response here) It exhibits both.
+  - (Your response here) Real variability is not induced in the estimates. Considering the stipulation that the dataset comes from ideal testing, by definition, POF should not have any real variability, but only induced variability.
 - Does this confidence interval imply that `POF < 0.03`?
   - (Your response here) Yes.
 - Compare this probability with your estimate from q2; is it more or less trustworthy?
   - (Your response here) The number of observations has not changed, only a distribution was applied to the data, therefore I would argue that both estimates are equally as trustworthy. However, as it is unsure the distribution being used reflects real-world behavior in the first place, I would go as far as to say that this could be misleading.
 - Does the confidence interval above account for uncertainty arising from the *Monte Carlo approximation*? Why or why not?
-  - (Your response here) No, this method is a mere implementation of the Monte Carlo approximation with the measured data.
+  - (Your response here) Yes, uncertainty that arises from the Monte Carlo method has been accounted for. The confidence interval is derived from the mean and standard deviation of the Monte Carlo samples.
 - Does the confidence interval above account for uncertainty arising from *limited physical tests* (`df_samples`)? Why or why not?
   - (Your response here) No, as the distribution is only fitted to the limited physical tests we had in the first place. 
 - What could you do to tighten up the confidence interval?
@@ -265,7 +265,7 @@ df_samples %>% estimate_pof()
 - Does this estimate have any uncertainty due to *limited physical tests*? Why or why not?
   - (Your response here) This remains, as the number of physical tests remain the same.
 - With the scopus as the `POF`, would uncertainty due to *limited physical tests* be induced or real?
-  - (Your response here) This would be real, as it is stated at the beginning that physical the tests themselves are assumed to be perfect, and the tests that have already been done is all there is to work with.
+  - (Your response here) This would be an induced uncertainty. The method of measurement itself, which is intrinsically an induced uncertainty, includes the number of physical tests done.
 
 ## Quantifying sampling uncertainty
 <!-- --------------------------------------- -->

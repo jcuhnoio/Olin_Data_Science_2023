@@ -103,15 +103,23 @@ for more information.
 ``` r
 library(MASS)
 library(rsample)
+```
+
+    ## Warning: package 'rsample' was built under R version 4.2.3
+
+``` r
 library(broom)
 library(tidyverse)
 ```
 
     ## ── Attaching packages ─────────────────────────────────────── tidyverse 1.3.2 ──
-    ## ✔ ggplot2 3.4.0      ✔ purrr   1.0.1 
-    ## ✔ tibble  3.1.8      ✔ dplyr   1.0.10
-    ## ✔ tidyr   1.2.1      ✔ stringr 1.5.0 
-    ## ✔ readr   2.1.3      ✔ forcats 0.5.2 
+    ## ✔ ggplot2 3.4.1     ✔ purrr   1.0.1
+    ## ✔ tibble  3.2.1     ✔ dplyr   1.1.0
+    ## ✔ tidyr   1.3.0     ✔ stringr 1.5.0
+    ## ✔ readr   2.1.4     ✔ forcats 1.0.0
+
+    ## Warning: package 'tibble' was built under R version 4.2.3
+
     ## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
     ## ✖ dplyr::filter() masks stats::filter()
     ## ✖ dplyr::lag()    masks stats::lag()
@@ -339,8 +347,8 @@ glimpse(df_norm_sim)
 
     ## Rows: 10,000
     ## Columns: 2
-    ## $ strength <dbl> 39476.67, 40427.79, 39581.83, 40189.30, 39955.69, 39692.85, 3…
-    ## $ g        <dbl> 260.985777, 1212.103793, 366.141159, 973.615107, 740.005351, …
+    ## $ strength <dbl> 39784.14, 40340.80, 39624.17, 39974.18, 40315.59, 39665.28, 3…
+    ## $ g        <dbl> 568.4547, 1125.1174, 408.4860, 758.4939, 1099.9086, 449.5974,…
 
 ``` r
 ## NOTE: The following code estimates the POF and a 95% confidence interval
@@ -363,12 +371,15 @@ df_norm_pof
     ## # A tibble: 1 × 3
     ##   pof_lo pof_est pof_hi
     ##    <dbl>   <dbl>  <dbl>
-    ## 1 0.0144  0.0169 0.0194
+    ## 1 0.0171  0.0198 0.0225
 
 - Assuming your scopus is the probability of failure `POF` defined
   above, does your estimate exhibit real variability, induced
   variability, or both?
-  - (Your response here) It exhibits both.
+  - (Your response here) Real variability is not induced in the
+    estimates. Considering the stipulation that the dataset comes from
+    ideal testing, by definition, POF should not have any real
+    variability, but only induced variability.
 - Does this confidence interval imply that `POF < 0.03`?
   - (Your response here) Yes.
 - Compare this probability with your estimate from q2; is it more or
@@ -381,8 +392,10 @@ df_norm_pof
     misleading.
 - Does the confidence interval above account for uncertainty arising
   from the *Monte Carlo approximation*? Why or why not?
-  - (Your response here) No, this method is a mere implementation of the
-    Monte Carlo approximation with the measured data.
+  - (Your response here) Yes, uncertainty that arises from the Monte
+    Carlo method has been accounted for. The confidence interval is
+    derived from the mean and standard deviation of the Monte Carlo
+    samples.
 - Does the confidence interval above account for uncertainty arising
   from *limited physical tests* (`df_samples`)? Why or why not?
   - (Your response here) No, as the distribution is only fitted to the
@@ -469,10 +482,9 @@ df_samples %>% estimate_pof()
     remain the same.
 - With the scopus as the `POF`, would uncertainty due to *limited
   physical tests* be induced or real?
-  - (Your response here) This would be real, as it is stated at the
-    beginning that physical the tests themselves are assumed to be
-    perfect, and the tests that have already been done is all there is
-    to work with.
+  - (Your response here) This would be an induced uncertainty. The
+    method of measurement itself, which is intrinsically an induced
+    uncertainty, includes the number of physical tests done.
 
 ## Quantifying sampling uncertainty
 
@@ -506,7 +518,7 @@ df_samples %>%
     ## # A tibble: 1 × 6
     ##   term   .lower .estimate .upper .alpha .method   
     ##   <chr>   <dbl>     <dbl>  <dbl>  <dbl> <chr>     
-    ## 1 pof   0.00133    0.0181 0.0476   0.05 percentile
+    ## 1 pof   0.00161    0.0181 0.0491   0.05 percentile
 
 **Observations**:
 

@@ -107,9 +107,12 @@ library(tidyverse)
 
     ## ── Attaching packages ─────────────────────────────────────── tidyverse 1.3.2 ──
     ## ✔ ggplot2 3.4.1     ✔ purrr   1.0.1
-    ## ✔ tibble  3.1.8     ✔ dplyr   1.1.0
+    ## ✔ tibble  3.2.1     ✔ dplyr   1.1.0
     ## ✔ tidyr   1.3.0     ✔ stringr 1.5.0
     ## ✔ readr   2.1.4     ✔ forcats 1.0.0
+
+    ## Warning: package 'tibble' was built under R version 4.2.3
+
     ## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
     ## ✖ dplyr::filter() masks stats::filter()
     ## ✖ dplyr::lag()    masks stats::lag()
@@ -546,8 +549,20 @@ df_data %>%
 **Observations**:
 
 - Looking at data across the entire country, 2-4 person families have
-  income that generally increases with family size. However, from 4-6,
-  there does not seem to be a marked difference in income.
+  mean income that generally increases with family size. However, from
+  4-6, there does not seem to be a marked difference in mean income.
+
+- It is also interesting to note that the standard deviation of the
+  income also exhibits a similar behavior with the mean, as the standard
+  deviation increases with family size until a certain point.
+
+- A hypothesis I have with the two trends is that since having more
+  children usually come with more time, bigger families have people that
+  are generally further into their careers. This would mean that they
+  would usually earn more money, and seldom less. However, since the
+  increase in income itself is quite dependent on the industry of which
+  the career is in, this discrepancy results in a larger standard
+  deviation.
 
 Ideas:
 

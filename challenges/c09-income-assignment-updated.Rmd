@@ -315,7 +315,11 @@ df_data %>%
 
 **Observations**:
 
-- Looking at data across the entire country, 2-4 person families have income that generally increases with family size. However, from 4-6, there does not seem to be a marked difference in income.
+- Looking at data across the entire country, 2-4 person families have mean income that generally increases with family size. However, from 4-6, there does not seem to be a marked difference in mean income.
+
+- It is also interesting to note that the standard deviation of the income also exhibits a similar behavior with the mean, as the standard deviation increases with family size until a certain point. 
+
+- A hypothesis I have with the two trends is that since having more children usually come with more time, bigger families have people that are generally further into their careers. This would mean that they would usually earn more money, and seldom less. However, since the increase in income itself is quite dependent on the industry of which the career is in, this discrepancy results in a larger standard deviation.
 
 Ideas:
 

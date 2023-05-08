@@ -246,7 +246,22 @@ summary(df_psaap)
 
 **Observations**:
 
-- (Take notes here!)
+- (Take notes here!) There are a whole lot of variables here, and doing
+  a bit of research on what some of these actually mean would be very
+  useful, though it is not inherently explained or present in the
+  dataset. For example, isochoric means “same volume”, which would make
+  sense, because particles, which I assume are solid, should not
+  compress, at least not nearly as much as gasses. Convection
+  coefficient is used for heat transfer due to convection, in this case
+  from the surrounding air to the particle. Many of these variables are
+  material properties of the particles and the environment, or the
+  environment in which the tests are conducted in, while other variables
+  are more reliant on the physical design of the contraption. Which
+  variable one would focus on would vary drastically depending on the
+  context of analysis - i.e. material science vs. physical design.
+
+![The slide](./images/psaap-vars.png) Figure 2. A visualization of the
+simulation taken from the slide I created.
 
 The important variables in this dataset are:
 
@@ -523,7 +538,7 @@ df_psaap %>%
 ##       optimize your validation error.
 
 fit_q4 <-
-  lm(data = df_train, formula = T_norm ~ (x * L* I_0))
+  lm(data = df_train, formula = T_norm ~ (x + L + I_0))
 
 df_psaap %>% 
   ggplot() +
@@ -548,9 +563,9 @@ print(error_q4)
 ```
 
     ##          postResample.predictions_q4..df_validate.T_norm.
-    ## RMSE                                            0.3213676
-    ## Rsquared                                        0.3845223
-    ## MAE                                             0.2488505
+    ## RMSE                                            0.3249151
+    ## Rsquared                                        0.3876564
+    ## MAE                                             0.2598093
 
 **Observations**:
 
@@ -709,9 +724,14 @@ bind_rows(
 
 - Which model tends to be more accurate? How can you tell from this
   predicted-vs-actual plot?
-  - (Your response here) In terms of accuracy, from what is visible from
-    the plot, there is not much of a difference, as both models’
-    intervals seem land on the `Predicted T_norm vs Actual T_norm` line.
+  - (Your response here) From a glance, the `q4` model has a lot more
+    points that land very close to the regression line. However, there
+    are also points that are farther away from the regression line with
+    the `q4` model when compared to the `x only` model. Thus, actual
+    RMSE values would have to be calculated to determine the true
+    ‘accuracy’. With that being said, since `q4` has more points that
+    end up closer to the model, it would be the more accurate model, at
+    least in this regard.
 - Which model tends to be *more confident* in its predictions? Put
   differently, which model has *narrower prediction intervals*?
   - (Your response here) The q4 model has moderately narrower prediction

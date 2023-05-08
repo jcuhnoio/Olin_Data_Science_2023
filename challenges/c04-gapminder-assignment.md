@@ -88,9 +88,12 @@ library(tidyverse)
 
     ## ── Attaching packages ─────────────────────────────────────── tidyverse 1.3.2 ──
     ## ✔ ggplot2 3.4.1     ✔ purrr   1.0.1
-    ## ✔ tibble  3.1.8     ✔ dplyr   1.1.0
+    ## ✔ tibble  3.2.1     ✔ dplyr   1.1.0
     ## ✔ tidyr   1.3.0     ✔ stringr 1.5.0
     ## ✔ readr   2.1.4     ✔ forcats 1.0.0
+
+    ## Warning: package 'tibble' was built under R version 4.2.3
+
     ## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
     ## ✖ dplyr::filter() masks stats::filter()
     ## ✖ dplyr::lag()    masks stats::lag()
@@ -195,11 +198,12 @@ can.
 
 ``` r
 ## TASK: Create a visual of gdpPercap vs continent
-gm_min <- gapminder[gapminder$year == year_min,]
 
-gm_min %>% 
-  ggplot(aes(continent, gdpPercap)) +
-  geom_boxplot()
+gapminder %>% 
+  filter(year == year_min) %>% 
+    ggplot(aes(continent, gdpPercap)) +
+    geom_boxplot() +
+    scale_y_log10()
 ```
 
 ![](c04-gapminder-assignment_files/figure-gfm/q2-task-1.png)<!-- -->
@@ -208,8 +212,11 @@ gm_min %>%
 
 - Write your observations here
 
-When taking the mean of GDP per capita for each country in a continent,
-Oceania has the biggest value.
+Oceania has the smallest quartile range, while Asia has the biggest
+quartile range. I suspected that this was due to the number of countries
+in each continents, but it turns out that Asia and Europe has just about
+the same number of countries inside the continent, while Africa has more
+countries in the continent than Asia.
 
 **Difficulties & Approaches**:
 
@@ -224,8 +231,7 @@ outliers.
 
 ``` r
 ## TASK: Identify the outliers from q2
-
-print(gm_min %>% slice_max(gdpPercap)) 
+gapminder %>% filter(year == year_min) %>% slice_max(gdpPercap)
 ```
 
     ## # A tibble: 1 × 6
@@ -234,7 +240,7 @@ print(gm_min %>% slice_max(gdpPercap))
     ## 1 Kuwait  Asia       1952    55.6 160000   108382.
 
 ``` r
-print(gm_min[gm_min$continent == "Europe",] %>% slice_max(gdpPercap))
+gapminder %>% filter(continent == "Europe", year == year_min) %>% slice_max(gdpPercap)
 ```
 
     ## # A tibble: 1 × 6
@@ -243,7 +249,7 @@ print(gm_min[gm_min$continent == "Europe",] %>% slice_max(gdpPercap))
     ## 1 Switzerland Europe     1952    69.6 4815000    14734.
 
 ``` r
-print(gm_min[gm_min$continent == "Americas",] %>% slice_max(gdpPercap))
+gapminder %>% filter(continent == "Americas", year == year_min) %>% slice_max(gdpPercap)
 ```
 
     ## # A tibble: 1 × 6
@@ -287,14 +293,16 @@ variables; think about using different aesthetics or facets.
 
 ``` r
 ## TASK: Create a visual of gdpPercap vs continent
-gm_min %>% 
+gapminder %>% filter(year == year_min | year == year_max) %>% 
   ggplot(aes(continent, gdpPercap)) +
   geom_boxplot() +
   geom_point(
     data = . %>% filter(country %in% c("United States", "Kuwait", "Switzerland")),
     mapping = aes(color = country),
     size = 2
-  )
+  ) +
+  facet_grid(cols = vars(year)) +
+  scale_y_log10()
 ```
 
 ![](c04-gapminder-assignment_files/figure-gfm/q4-task-1.png)<!-- -->
@@ -303,9 +311,13 @@ gm_min %>%
 
 - Write your observations here
 
-According to the boxplot, outliers only exist above the mean for each
-continent. Regardless of general tendencies, Kuwait has a
-disproportionately large GDP per capita value.
+Comparing `year_min` and `year_max`, every continent shows signs of
+growth in terms of GDP per capita. For the outliers, Switzerland and
+United states saw growth in GDP per capita between `year_min` and
+`year_max`, while Kuwait actually saw a decrease. It is also interesting
+to note that on the log10 scale, the gap that the US had in `year_min`
+from the upper quartile is still maintained in `year_max`, while the gap
+for Switzerland and of course, Kuwait, has decreased.
 
 # Your Own EDA
 

@@ -80,9 +80,12 @@ library(tidyverse)
 
     ## ── Attaching packages ─────────────────────────────────────── tidyverse 1.3.2 ──
     ## ✔ ggplot2 3.4.1     ✔ purrr   1.0.1
-    ## ✔ tibble  3.1.8     ✔ dplyr   1.1.0
+    ## ✔ tibble  3.2.1     ✔ dplyr   1.1.0
     ## ✔ tidyr   1.3.0     ✔ stringr 1.5.0
     ## ✔ readr   2.1.4     ✔ forcats 1.0.0
+
+    ## Warning: package 'tibble' was built under R version 4.2.3
+
     ## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
     ## ✖ dplyr::filter() masks stats::filter()
     ## ✖ dplyr::lag()    masks stats::lag()
@@ -162,6 +165,9 @@ tibble(x = seq(0, 1, length.out = 100)) %>%
 
     ## Warning: Using `size` aesthetic for lines was deprecated in ggplot2 3.4.0.
     ## ℹ Please use `linewidth` instead.
+    ## This warning is displayed once every 8 hours.
+    ## Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
+    ## generated.
 
 ![](c07-monte-carlo-assignment_files/figure-gfm/vis-areas-1.png)<!-- -->
 
@@ -194,6 +200,11 @@ set will estimate the probability of points landing in that area (see
 ## TASK: Choose a sample size and generate samples
 n <- 100000 # Choose a sample size
 df_q1 <- as.data.frame(list(x = runif(n, 0, 1), y = runif(n, 0, 1))) # Generate the data
+df_q1 <- df_q1 %>% 
+  mutate(
+    inside = (x^2 + y^2) < 1,
+    stat = 4 * inside  
+  )
 
 # Visualize points of generated samples
 tibble(x = seq(0, 1, length.out = 100)) %>%
@@ -221,21 +232,17 @@ tibble(x = seq(0, 1, length.out = 100)) %>%
 
 ``` r
 ## TASK: Estimate pi using your data from q1
-pi_est <- df_q1 %>% 
-  mutate(
-    inside = (x^2 + y^2) < 1
-  ) %>% 
+pi_est <- df_q1 %>%
   summarize(
-     inside_mean = mean(inside),
-     inside_sd = sd(inside),
-     pi_est = inside_mean * 4,
-     sample_size = nrow(df_q1)
+     pi_mean = mean(stat),
+     pi_sd = sd(stat),
+     sample_size = n()
   )
 pi_est
 ```
 
-    ##   inside_mean inside_sd pi_est sample_size
-    ## 1     0.78495 0.4108591 3.1398      100000
+    ##   pi_mean    pi_sd sample_size
+    ## 1 3.14756 1.638027      100000
 
 # Quantifying Uncertainty
 
@@ -250,19 +257,19 @@ to assess your $\pi$ estimate.
 
 ``` r
 Zscore <- - qnorm(0.997 / 2)
-sigma3_min <- 4 * (pi_est$inside_mean - Zscore * pi_est$inside_sd)
-sigma3_max <- 4 * (pi_est$inside_mean + Zscore * pi_est$inside_sd)
+sigma3_min <- (pi_est$pi_mean - Zscore * pi_est$pi_sd)
+sigma3_max <- (pi_est$pi_mean + Zscore * pi_est$pi_sd)
 
 sigma3_min
 ```
 
-    ## [1] 3.133621
+    ## [1] 3.141401
 
 ``` r
 sigma3_max
 ```
 
-    ## [1] 3.145979
+    ## [1] 3.153719
 
 **Observations**:
 
@@ -272,10 +279,12 @@ sigma3_max
   - (Your response here) 99.7%
 - Was your sample size $n$ large enough? Why do you say that?
   - (Your response here) Yes. I believe a “large enough sample size”
-    depends heavily on what I am trying to achieve. Here, since I am
-    trying to observe the feasibility of the Monte Carlo method by
-    estimating pi, and since I was able to get a meaningful
-    approximation, I would say that my sample size is large enough.
+    depends heavily on what I am trying to achieve. In the context of
+    this experiment, the Monte Carlo method itself is being explored
+    with a number that most people are familiar with - pi. Therefore,
+    having a sample size that is big enough for the Monte Carlo method
+    to replicate a confidence interval that contains the desired value
+    at all is adequate.
 
 # References
 

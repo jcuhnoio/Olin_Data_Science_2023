@@ -103,6 +103,11 @@ Remember in `e-stat02-probability` we learned how to estimate probabilities as t
 ## TASK: Choose a sample size and generate samples
 n <- 100000 # Choose a sample size
 df_q1 <- as.data.frame(list(x = runif(n, 0, 1), y = runif(n, 0, 1))) # Generate the data
+df_q1 <- df_q1 %>% 
+  mutate(
+    inside = (x^2 + y^2) < 1,
+    stat = 4 * inside  
+  )
 
 # Visualize points of generated samples
 tibble(x = seq(0, 1, length.out = 100)) %>%
@@ -128,15 +133,11 @@ tibble(x = seq(0, 1, length.out = 100)) %>%
 
 ```{r q2-task}
 ## TASK: Estimate pi using your data from q1
-pi_est <- df_q1 %>% 
-  mutate(
-    inside = (x^2 + y^2) < 1
-  ) %>% 
+pi_est <- df_q1 %>%
   summarize(
-     inside_mean = mean(inside),
-     inside_sd = sd(inside),
-     pi_est = inside_mean * 4,
-     sample_size = nrow(df_q1)
+     pi_mean = mean(stat),
+     pi_sd = sd(stat),
+     sample_size = n()
   )
 pi_est
 ```
@@ -150,8 +151,8 @@ You now have an estimate of $\pi$, but how trustworthy is that estimate? In `e-s
 
 ```{r q3-task}
 Zscore <- - qnorm(0.997 / 2)
-sigma3_min <- 4 * (pi_est$inside_mean - Zscore * pi_est$inside_sd)
-sigma3_max <- 4 * (pi_est$inside_mean + Zscore * pi_est$inside_sd)
+sigma3_min <- (pi_est$pi_mean - Zscore * pi_est$pi_sd)
+sigma3_max <- (pi_est$pi_mean + Zscore * pi_est$pi_sd)
 
 sigma3_min
 sigma3_max
@@ -164,7 +165,7 @@ sigma3_max
 - What confidence level did you choose?
   - (Your response here) 99.7%
 - Was your sample size $n$ large enough? Why do you say that?
-  - (Your response here) Yes. I believe a "large enough sample size" depends heavily on what I am trying to achieve. Here, since I am trying to observe the feasibility of the Monte Carlo method by estimating pi, and since I was able to get a meaningful approximation, I would say that my sample size is large enough.
+  - (Your response here) Yes. I believe a "large enough sample size" depends heavily on what I am trying to achieve. In the context of this experiment, the Monte Carlo method itself is being explored with a number that most people are familiar with - pi. Therefore, having a sample size that is big enough for the Monte Carlo method to replicate a confidence interval that contains the desired value at all is adequate.
 
 # References
 <!-- -------------------------------------------------- -->

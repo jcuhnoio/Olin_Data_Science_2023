@@ -79,7 +79,7 @@ df_sat %>% glimpse
 - What information do we have about these students?
   - (Your response here) Their major, SAT score, GPA from high school, computer science, and university, and that they are all from the same university.
 - What kinds of information *do we not have* about these students?
-  - (Your response here) Everything else about them, including high school activities.
+  - (Your response here) Whether they have taken the SAT exam multiple times, which SAT exam they took, socioeconomic status of family, etc.
 - Based on these missing variables, what possible effects could be present in the data that we would have *no way of detecting*?
   - (Your response here) Academic dishonesty, and students taking different SAT exams could pose an issue.
 
@@ -143,17 +143,17 @@ The R function `cor.test` implements such a hypothesis test under the assumption
 #   geom_histogram(aes(x = high_GPA)) +
 #   geom_histogram(aes(x = univ_GPA))
 
-ggplot(df_composite, aes(x = both_SAT)) + geom_histogram()
-ggplot(df_composite, aes(x = high_GPA)) + geom_histogram()
-ggplot(df_composite, aes(x = univ_GPA)) + geom_histogram()
+ggplot(df_composite, aes(x = both_SAT)) + geom_histogram(bins = 40)
+ggplot(df_composite, aes(x = high_GPA)) + geom_histogram(bins = 40)
+ggplot(df_composite, aes(x = univ_GPA)) + geom_histogram(bins = 40)
 ```
 
 **Observations**:
 
 - To what extent does `both_SAT` look like a normal distribution?
-  - (Your response here) The counts taper off on either extremes, however the counts in between are quite evenly spread.
+  - (Your response here) Out of the three variables, `both_SAT` looks the most similar to a normal distribution. There is some noise throughout the score value, but the general characteristics of a normal distribution - the 'bell shape' - can be seen.
 - To what extent does `high_GPA` look like a normal distribution?
-  - (Your response here) It looks like there are two humps - as if there were two normal distributions next to each other. Counts taper out on either extremes but at the middle as well. (This is interesting as I heard many of my math teachers talk about how student grades exhibit this exact behavior.)
+  - (Your response here) It looks like there are two humps - as if there were two normal distributions next to each other. Counts taper out on either extremes but at the middle as well, as if there are two separate groups with `3.0` as a bordering value. This is interesting as I heard many of my math teachers talk about how student grades exhibit this exact behavior. While one may argue that this group looks like more of a skew, testimonials from teachers, and the `univ_GPA` histogram itself suggest that there are two humps. I argue that taking a look at `univ_GPA` can inform what is happening in this histogram as well, since the statistics are both related to schoolwork, which is a relevant pairing in regards to student behavior and performance - the GPA.
 - To what extent does `univ_GPA` look like a normal distribution?
   - (Your response here) It is similar to the shape of `high_GPA`. However, the hump on the left is significantly smaller than the one on the right.
 
@@ -296,7 +296,7 @@ df_composite %>%
   geom_point() +
   geom_smooth(method = "lm")
 
-fit_add <- lm(univ_GPA ~ high_add, data = df_composite)
+fit_add <- lm(univ_GPA ~ both_SAT + high_GPA, data = df_composite)
 
 fit_add %>%
   tidy(
@@ -342,13 +342,13 @@ fit_both_powers %>%
 **Observations**:
 
 - How well do these models perform, compared to the one you built in q6?
-  - (Your response here) For simply adding, the linear model does not seem to make a significant difference. However, for using `high_GPA` for the predictor, `std.error` for  the `(Intercept)`, which the scale should not change as `univ_GPA` is a fixed scale, have a smaller value compared to the one in q6. This is an indicator that the model here may perform better than the one built in q6. Also, applying different computations to include `high_GPA` and `both_SAT` may alter how well the model performs, from looking at the last model.
+  - (Your response here) For simply adding `both_SAT` and `high_GPA`, the linear model does not seem to make a significant difference. However, for using `high_GPA` for the predictor, `std.error` for  the `(Intercept)`, which the scale should not change as `univ_GPA` is a fixed scale, have a smaller value compared to the one in q6. This is an indicator that the model here may perform better than the one built in q6. Also, applying different computations to include `high_GPA` and `both_SAT` may alter how well the model performs, from looking at the last model.
   
 - What is the confidence interval on the coefficient of `both_SAT` when including `high_GPA` as a predictor?? Is this coefficient significantly different from zero?
-  - (Your response here) [`conf.low` ~= 0.0019, `conf.high` ~= 0.0034] The coefficient is significantly nonzero.
+  - (Your response here) [`conf.low` ~= -0.00022, `conf.high` ~= 0.00180] The confidence interval includes zero, therefore cannot be concluded that the coefficient is significantly nonzero.
   
 - How do the hypothesis test results compare with the results in q6?
-  - (Your response here) $$\beta \neq 0$$
+  - (Your response here) The results in q6 suggested that $$ \beta \neq 0 $$ with just `both_SAT`. Adding `both_SAT` and `high_GPA`, however, suggests the possibility that $$ \beta = 0 $$  
 
 ## Synthesize
 <!-- ------------------------- -->

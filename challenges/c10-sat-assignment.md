@@ -96,9 +96,12 @@ library(tidyverse)
 
     ## ── Attaching packages ─────────────────────────────────────── tidyverse 1.3.2 ──
     ## ✔ ggplot2 3.4.1     ✔ purrr   1.0.1
-    ## ✔ tibble  3.1.8     ✔ dplyr   1.1.0
+    ## ✔ tibble  3.2.1     ✔ dplyr   1.1.0
     ## ✔ tidyr   1.3.0     ✔ stringr 1.5.0
     ## ✔ readr   2.1.4     ✔ forcats 1.0.0
+
+    ## Warning: package 'tibble' was built under R version 4.2.3
+
     ## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
     ## ✖ dplyr::filter() masks stats::filter()
     ## ✖ dplyr::lag()    masks stats::lag()
@@ -205,8 +208,9 @@ df_sat %>% glimpse
     computer science, and university, and that they are all from the
     same university.
 - What kinds of information *do we not have* about these students?
-  - (Your response here) Everything else about them, including high
-    school activities.
+  - (Your response here) Whether they have taken the SAT exam multiple
+    times, which SAT exam they took, socioeconomic status of family,
+    etc.
 - Based on these missing variables, what possible effects could be
   present in the data that we would have *no way of detecting*?
   - (Your response here) Academic dishonesty, and students taking
@@ -287,40 +291,43 @@ to see if this assumption looks reasonable for our data.
 #   geom_histogram(aes(x = high_GPA)) +
 #   geom_histogram(aes(x = univ_GPA))
 
-ggplot(df_composite, aes(x = both_SAT)) + geom_histogram()
+ggplot(df_composite, aes(x = both_SAT)) + geom_histogram(bins = 40)
 ```
-
-    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
 
 ![](c10-sat-assignment_files/figure-gfm/q3-task-1.png)<!-- -->
 
 ``` r
-ggplot(df_composite, aes(x = high_GPA)) + geom_histogram()
+ggplot(df_composite, aes(x = high_GPA)) + geom_histogram(bins = 40)
 ```
-
-    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
 
 ![](c10-sat-assignment_files/figure-gfm/q3-task-2.png)<!-- -->
 
 ``` r
-ggplot(df_composite, aes(x = univ_GPA)) + geom_histogram()
+ggplot(df_composite, aes(x = univ_GPA)) + geom_histogram(bins = 40)
 ```
-
-    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
 
 ![](c10-sat-assignment_files/figure-gfm/q3-task-3.png)<!-- -->
 
 **Observations**:
 
 - To what extent does `both_SAT` look like a normal distribution?
-  - (Your response here) The counts taper off on either extremes,
-    however the counts in between are quite evenly spread.
+  - (Your response here) Out of the three variables, `both_SAT` looks
+    the most similar to a normal distribution. There is some noise
+    throughout the score value, but the general characteristics of a
+    normal distribution - the ‘bell shape’ - can be seen.
 - To what extent does `high_GPA` look like a normal distribution?
   - (Your response here) It looks like there are two humps - as if there
     were two normal distributions next to each other. Counts taper out
-    on either extremes but at the middle as well. (This is interesting
+    on either extremes but at the middle as well, as if there are two
+    separate groups with `3.0` as a bordering value. This is interesting
     as I heard many of my math teachers talk about how student grades
-    exhibit this exact behavior.)
+    exhibit this exact behavior. While one may argue that this group
+    looks like more of a skew, testimonials from teachers, and the
+    `univ_GPA` histogram itself suggest that there are two humps. I
+    argue that taking a look at `univ_GPA` can inform what is happening
+    in this histogram as well, since the statistics are both related to
+    schoolwork, which is a relevant pairing in regards to student
+    behavior and performance - the GPA.
 - To what extent does `univ_GPA` look like a normal distribution?
   - (Your response here) It is similar to the shape of `high_GPA`.
     However, the hump on the left is significantly smaller than the one
@@ -422,13 +429,13 @@ cor.test(df_boot$high_GPA, df_boot$univ_GPA)
     ##  Pearson's product-moment correlation
     ## 
     ## data:  df_boot$high_GPA and df_boot$univ_GPA
-    ## t = 399.68, df = 104998, p-value < 2.2e-16
+    ## t = 402.14, df = 104998, p-value < 2.2e-16
     ## alternative hypothesis: true correlation is not equal to 0
     ## 95 percent confidence interval:
-    ##  0.7743774 0.7791752
+    ##  0.7762753 0.7810378
     ## sample estimates:
     ##       cor 
-    ## 0.7767876
+    ## 0.7786677
 
 **Observations**:
 
@@ -562,7 +569,7 @@ df_composite %>%
 ![](c10-sat-assignment_files/figure-gfm/q7-task-1.png)<!-- -->
 
 ``` r
-fit_add <- lm(univ_GPA ~ high_add, data = df_composite)
+fit_add <- lm(univ_GPA ~ both_SAT + high_GPA, data = df_composite)
 
 fit_add %>%
   tidy(
@@ -571,11 +578,12 @@ fit_add %>%
   )
 ```
 
-    ## # A tibble: 2 × 7
-    ##   term        estimate std.error statistic  p.value conf.low conf.high
-    ##   <chr>          <dbl>     <dbl>     <dbl>    <dbl>    <dbl>     <dbl>
-    ## 1 (Intercept) -0.174    0.351       -0.494 6.22e- 1 -1.10      0.749  
-    ## 2 high_add     0.00273  0.000286     9.56  6.91e-16  0.00198   0.00348
+    ## # A tibble: 3 × 7
+    ##   term        estimate std.error statistic       p.value  conf.low conf.high
+    ##   <chr>          <dbl>     <dbl>     <dbl>         <dbl>     <dbl>     <dbl>
+    ## 1 (Intercept) 0.540     0.318         1.70 0.0924        -0.294      1.37   
+    ## 2 both_SAT    0.000792  0.000387      2.05 0.0432        -0.000224   0.00181
+    ## 3 high_GPA    0.541     0.0837        6.47 0.00000000353  0.322      0.761
 
 ``` r
 #--------------------- high_GPA
@@ -641,22 +649,25 @@ fit_both_powers %>%
 **Observations**:
 
 - How well do these models perform, compared to the one you built in q6?
-  - (Your response here) For simply adding, the linear model does not
-    seem to make a significant difference. However, for using `high_GPA`
-    for the predictor, `std.error` for the `(Intercept)`, which the
-    scale should not change as `univ_GPA` is a fixed scale, have a
-    smaller value compared to the one in q6. This is an indicator that
-    the model here may perform better than the one built in q6. Also,
-    applying different computations to include `high_GPA` and `both_SAT`
-    may alter how well the model performs, from looking at the last
-    model.
+  - (Your response here) For simply adding `both_SAT` and `high_GPA`,
+    the linear model does not seem to make a significant difference.
+    However, for using `high_GPA` for the predictor, `std.error` for the
+    `(Intercept)`, which the scale should not change as `univ_GPA` is a
+    fixed scale, have a smaller value compared to the one in q6. This is
+    an indicator that the model here may perform better than the one
+    built in q6. Also, applying different computations to include
+    `high_GPA` and `both_SAT` may alter how well the model performs,
+    from looking at the last model.
 - What is the confidence interval on the coefficient of `both_SAT` when
   including `high_GPA` as a predictor?? Is this coefficient
   significantly different from zero?
-  - (Your response here) \[`conf.low` \~= 0.0019, `conf.high` \~=
-    0.0034\] The coefficient is significantly nonzero.
+  - (Your response here) \[`conf.low` \~= -0.00022, `conf.high` \~=
+    0.00180\] The confidence interval includes zero, therefore cannot be
+    concluded that the coefficient is significantly nonzero.
 - How do the hypothesis test results compare with the results in q6?
-  - (Your response here) $$\beta \neq 0$$
+  - (Your response here) The results in q6 suggested that
+    $$ \beta \neq 0 $$ with just `both_SAT`. Adding `both_SAT` and
+    `high_GPA`, however, suggests the possibility that $$ \beta = 0 $$
 
 ## Synthesize
 

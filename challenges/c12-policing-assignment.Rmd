@@ -61,6 +61,7 @@ df_data <- readRDS(filename)
 summary(df_data)
 ```
 
+There are many interesting relevant data on police stops that have occured. Racial data, age, and sex seem to be the some of the most obvious things to look at. One thing that stands out the most is that there are a lot of NA values for outcomes that would logically be binary, like TRUE or FALSE. This could have something to do with how reports are actually logged into the dataset, or what the police even writes on the reports in the first place.
 
 Note that we have both a `subject_race` and `race_Raw` column. There are a few possibilities as to what `race_Raw` represents:
 
@@ -142,32 +143,51 @@ which is most plausible, based on your results?
 
 (Note: Create as many chunks and visuals as you need)
 ```{r}
-df_arrested <- df_cleaned %>% 
-  filter(arrest_made == TRUE)
+df_cleaned %>%
+  drop_na() %>% 
+  group_by(subject_age) %>% 
+  summarize(
+    total = n(),
+    arrests_made = sum(arrest_made),
+    age_rate = arrests_made / total
+  ) %>%
+    ggplot(aes(x = subject_age, y = age_rate)) +
+    geom_bar(stat = 'identity')
 
-df_arrested %>% 
-  ggplot(aes(x = subject_age)) +
-  geom_histogram()
 
-df_arrested %>% 
-  ggplot(aes(x = subject_sex, fill = subject_sex)) +
-  geom_bar()
+df_cleaned %>%
+  drop_na() %>% 
+  group_by(subject_sex) %>% 
+  summarize(
+    total = n(),
+    arrests_made = sum(arrest_made),
+    sex_rate = arrests_made / total
+  ) %>% 
+    ggplot(aes(x = subject_sex, y = sex_rate)) +
+    geom_col()
   
-df_arrested %>% 
-  ggplot(aes(x = subject_race, fill = subject_race)) +
-  geom_bar()
+  
+df_cleaned %>%
+  drop_na() %>% 
+  group_by(subject_race) %>% 
+  summarize(
+    total = n(),
+    arrests_made = sum(arrest_made),
+    race_rate = arrests_made / total
+  ) %>%
+  ggplot(aes(x = subject_race, y = race_rate, fill = subject_race)) +
+  geom_col()
 ```
 
 
 **Observations**:
 
 - How does `arrest_rate` tend to vary with `subject_age`?
-  - (Your response here) Arrest rates ramp up rapidly from the lowest age to the mid 20s, then winds down more gradually after that.
+  - (Your response here) While fluctuations definitely exist, there seems to be an ever so gradual increase.
 - How does `arrest_rate` tend to vary with `subject_sex`?
-  - (Your response here) Males are predominantly arrested.
+  - (Your response here) Males have a higher chance of being arrested
 - How does `arrest_rate` tend to vary with `subject_race`?
-  - (Your response here) `white` was the most frequently arrested race by a substantial margin, followed by `hispanic`, `black`, and `asia/pacific islander`.
-
+  - (Your response here) `hispanic` had the biggest arrest rate, while `white` and `black` followed.
 # Modeling
 <!-- -------------------------------------------------- -->
 
@@ -257,9 +277,9 @@ fit_q8 %>% tidy()
 **Observations**:
 
 - How does controlling for found contraband affect the `subject_race` terms in the model?
-  - (Your response here) While it does have correlation to the arrest rate, discrepancy still exists across `subject_race` values.
+  - (Your response here) While it does have correlation to the arrest rate, discrepancy still exists across `subject_race` values. For the coefficients, `subject_racehispanic` has a factor of 0.22, while `subject_raceblack` has a factor of -0.05, which is a significant disparity, considering that there should never be one in the first place if racial biases were to not exist.
 - What does the *finding of contraband* tell us about the stop? What does it *not* tell us about the stop?
-  - (Your response here) The finding of contraband is a stronger indicator of arrest rate than race, but still does not prove that racial bias is false.
+  - (Your response here) Looking at the coefficients, the finding of a contraband means that it is highly likely for an arrest to be made. However, the mere finding of the contraband leaves out lots of underlying factors for the interaction. For example, the reasoning for the police officer to be issuing a stop is still difficult to identify.
 
 ### __q9__ Go deeper: Pose at least one more question about the data and fit at least one more model in support of answering that question.
 ## Do different types of contraband affect arrest rate? (drugs weapons alcohol)

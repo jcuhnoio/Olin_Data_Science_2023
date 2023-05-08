@@ -41,29 +41,28 @@ Massachusetts Highway Stops
       visuals (or tables) as you need, but make sure to check the trends
       across all of the <code>subject</code> variables. Answer the questions
       under <em>observations</em> below.</a>
-- <a href="#modeling" id="toc-modeling">Modeling</a>
-  - <a
-    href="#q6-run-the-following-code-and-interpret-the-regression-coefficients-answer-the-the-questions-under-observations-below"
-    id="toc-q6-run-the-following-code-and-interpret-the-regression-coefficients-answer-the-the-questions-under-observations-below"><strong>q6</strong>
-    Run the following code and interpret the regression coefficients. Answer
-    the the questions under <em>observations</em> below.</a>
-  - <a
-    href="#q7-re-fit-the-logistic-regression-from-q6-setting-white-as-the-reference-level-for-subject_race-interpret-the-the-model-terms-and-answer-the-questions-below"
-    id="toc-q7-re-fit-the-logistic-regression-from-q6-setting-white-as-the-reference-level-for-subject_race-interpret-the-the-model-terms-and-answer-the-questions-below"><strong>q7</strong>
-    Re-fit the logistic regression from q6 setting <code>"white"</code> as
-    the reference level for <code>subject_race</code>. Interpret the the
-    model terms and answer the questions below.</a>
-  - <a
-    href="#q8-re-fit-the-model-using-a-factor-indicating-the-presence-of-contraband-in-the-subjects-vehicle-answer-the-questions-under-observations-below"
-    id="toc-q8-re-fit-the-model-using-a-factor-indicating-the-presence-of-contraband-in-the-subjects-vehicle-answer-the-questions-under-observations-below"><strong>q8</strong>
-    Re-fit the model using a factor indicating the presence of contraband in
-    the subject’s vehicle. Answer the questions under <em>observations</em>
-    below.</a>
-  - <a
-    href="#q9-go-deeper-pose-at-least-one-more-question-about-the-data-and-fit-at-least-one-more-model-in-support-of-answering-that-question"
-    id="toc-q9-go-deeper-pose-at-least-one-more-question-about-the-data-and-fit-at-least-one-more-model-in-support-of-answering-that-question"><strong>q9</strong>
-    Go deeper: Pose at least one more question about the data and fit at
-    least one more model in support of answering that question.</a>
+    - <a
+      href="#q6-run-the-following-code-and-interpret-the-regression-coefficients-answer-the-the-questions-under-observations-below"
+      id="toc-q6-run-the-following-code-and-interpret-the-regression-coefficients-answer-the-the-questions-under-observations-below"><strong>q6</strong>
+      Run the following code and interpret the regression coefficients. Answer
+      the the questions under <em>observations</em> below.</a>
+    - <a
+      href="#q7-re-fit-the-logistic-regression-from-q6-setting-white-as-the-reference-level-for-subject_race-interpret-the-the-model-terms-and-answer-the-questions-below"
+      id="toc-q7-re-fit-the-logistic-regression-from-q6-setting-white-as-the-reference-level-for-subject_race-interpret-the-the-model-terms-and-answer-the-questions-below"><strong>q7</strong>
+      Re-fit the logistic regression from q6 setting <code>"white"</code> as
+      the reference level for <code>subject_race</code>. Interpret the the
+      model terms and answer the questions below.</a>
+    - <a
+      href="#q8-re-fit-the-model-using-a-factor-indicating-the-presence-of-contraband-in-the-subjects-vehicle-answer-the-questions-under-observations-below"
+      id="toc-q8-re-fit-the-model-using-a-factor-indicating-the-presence-of-contraband-in-the-subjects-vehicle-answer-the-questions-under-observations-below"><strong>q8</strong>
+      Re-fit the model using a factor indicating the presence of contraband in
+      the subject’s vehicle. Answer the questions under <em>observations</em>
+      below.</a>
+    - <a
+      href="#q9-go-deeper-pose-at-least-one-more-question-about-the-data-and-fit-at-least-one-more-model-in-support-of-answering-that-question"
+      id="toc-q9-go-deeper-pose-at-least-one-more-question-about-the-data-and-fit-at-least-one-more-model-in-support-of-answering-that-question"><strong>q9</strong>
+      Go deeper: Pose at least one more question about the data and fit at
+      least one more model in support of answering that question.</a>
   - <a
     href="#do-different-types-of-contraband-affect-arrest-rate-drugs-weapons-alcohol"
     id="toc-do-different-types-of-contraband-affect-arrest-rate-drugs-weapons-alcohol">Do
@@ -214,6 +213,14 @@ summary(df_data)
     ##  (Other): 109857                              
     ##  NA's   :   9814
 
+There are many interesting relevant data on police stops that have
+occured. Racial data, age, and sex seem to be the some of the most
+obvious things to look at. One thing that stands out the most is that
+there are a lot of NA values for outcomes that would logically be
+binary, like TRUE or FALSE. This could have something to do with how
+reports are actually logged into the dataset, or what the police even
+writes on the reports in the first place.
+
 Note that we have both a `subject_race` and `race_Raw` column. There are
 a few possibilities as to what `race_Raw` represents:
 
@@ -344,32 +351,46 @@ which is most plausible, based on your results?
 (Note: Create as many chunks and visuals as you need)
 
 ``` r
-df_arrested <- df_cleaned %>% 
-  filter(arrest_made == TRUE)
-
-df_arrested %>% 
-  ggplot(aes(x = subject_age)) +
-  geom_histogram()
+df_cleaned %>%
+  drop_na() %>% 
+  group_by(subject_age) %>% 
+  summarize(
+    total = n(),
+    arrests_made = sum(arrest_made),
+    age_rate = arrests_made / total
+  ) %>%
+    ggplot(aes(x = subject_age, y = age_rate)) +
+    geom_bar(stat = 'identity')
 ```
-
-    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
-
-    ## Warning: Removed 2025 rows containing non-finite values (`stat_bin()`).
 
 ![](c12-policing-assignment_files/figure-gfm/unnamed-chunk-1-1.png)<!-- -->
 
 ``` r
-df_arrested %>% 
-  ggplot(aes(x = subject_sex, fill = subject_sex)) +
-  geom_bar()
+df_cleaned %>%
+  drop_na() %>% 
+  group_by(subject_sex) %>% 
+  summarize(
+    total = n(),
+    arrests_made = sum(arrest_made),
+    sex_rate = arrests_made / total
+  ) %>% 
+    ggplot(aes(x = subject_sex, y = sex_rate)) +
+    geom_col()
 ```
 
 ![](c12-policing-assignment_files/figure-gfm/unnamed-chunk-1-2.png)<!-- -->
 
 ``` r
-df_arrested %>% 
-  ggplot(aes(x = subject_race, fill = subject_race)) +
-  geom_bar()
+df_cleaned %>%
+  drop_na() %>% 
+  group_by(subject_race) %>% 
+  summarize(
+    total = n(),
+    arrests_made = sum(arrest_made),
+    race_rate = arrests_made / total
+  ) %>%
+  ggplot(aes(x = subject_race, y = race_rate, fill = subject_race)) +
+  geom_col()
 ```
 
 ![](c12-policing-assignment_files/figure-gfm/unnamed-chunk-1-3.png)<!-- -->
@@ -377,18 +398,14 @@ df_arrested %>%
 **Observations**:
 
 - How does `arrest_rate` tend to vary with `subject_age`?
-  - (Your response here) Arrest rates ramp up rapidly from the lowest
-    age to the mid 20s, then winds down more gradually after that.
+  - (Your response here) While fluctuations definitely exist, there
+    seems to be an ever so gradual increase.
 - How does `arrest_rate` tend to vary with `subject_sex`?
-  - (Your response here) Males are predominantly arrested.
+  - (Your response here) Males have a higher chance of being arrested
 - How does `arrest_rate` tend to vary with `subject_race`?
-  - (Your response here) `white` was the most frequently arrested race
-    by a substantial margin, followed by `hispanic`, `black`, and
-    `asia/pacific islander`.
-
-# Modeling
-
-<!-- -------------------------------------------------- -->
+  - (Your response here) `hispanic` had the biggest arrest rate, while
+    `white` and `black` followed. \# Modeling
+    <!-- -------------------------------------------------- -->
 
 We’re going to use a model to study the relationship between `subject`
 factors and arrest rate, but first we need to understand a bit more
@@ -533,12 +550,19 @@ fit_q8 %>% tidy()
 - How does controlling for found contraband affect the `subject_race`
   terms in the model?
   - (Your response here) While it does have correlation to the arrest
-    rate, discrepancy still exists across `subject_race` values.
+    rate, discrepancy still exists across `subject_race` values. For the
+    coefficients, `subject_racehispanic` has a factor of 0.22, while
+    `subject_raceblack` has a factor of -0.05, which is a significant
+    disparity, considering that there should never be one in the first
+    place if racial biases were to not exist.
 - What does the *finding of contraband* tell us about the stop? What
   does it *not* tell us about the stop?
-  - (Your response here) The finding of contraband is a stronger
-    indicator of arrest rate than race, but still does not prove that
-    racial bias is false.
+  - (Your response here) Looking at the coefficients, the finding of a
+    contraband means that it is highly likely for an arrest to be made.
+    However, the mere finding of the contraband leaves out lots of
+    underlying factors for the interaction. For example, the reasoning
+    for the police officer to be issuing a stop is still difficult to
+    identify.
 
 ### **q9** Go deeper: Pose at least one more question about the data and fit at least one more model in support of answering that question.
 
